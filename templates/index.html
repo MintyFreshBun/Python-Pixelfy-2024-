@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Posterize Image</title>
+  </head>
+  <body>
+    <!--
+    <h1>Posterize Image</h1>
+    <p>Upload an image to apply posterization.</p>
+    <form action="/" method="post" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*" required />
+      <button type="submit">Upload Image</button>
+    </form>
+    {% if processed_image %}
+    <h2>Processed Image:</h2>
+    <img src="{{ processed_image }}" alt="Processed Image" />
+    {% endif %}-->
+    <h1>Posterize Image</h1>
+    <p>Upload an image to apply posterization.</p>
+    <form method="post" enctype="multipart/form-data">
+      <p>
+        <input type="file" id="file" name="file" /><input
+          type="submit"
+          value="Upload"
+        />
+      </p>
+      <img
+        src="data:image/jpeg;base64,{{ img_data }}"
+        id="img-upload"
+        alt="img_data"
+        class="img-upload"
+      />
+    </form>
+  </body>
+</html>
