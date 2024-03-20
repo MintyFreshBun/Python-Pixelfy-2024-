@@ -26,12 +26,15 @@
           value="Upload"
         />
       </p>
+      {% if img_data %}
+      <h2>Processed Image:</h2>
       <img
         src="data:image/jpeg;base64,{{ img_data }}"
         id="img-upload"
         alt="img_data"
         class="img-upload"
       />
+      {% endif %}
     </form>
   </body>
 </html>
