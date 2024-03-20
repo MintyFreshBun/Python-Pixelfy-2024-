@@ -1,7 +1,7 @@
 
 from flask import Flask, request, redirect, render_template
 from werkzeug.utils import secure_filename
-from PIL import Image,ImageOps ,ImageFilter,ImageChops
+from PIL import Image,ImageOps ,ImageFilter,ImageChops ,ImageDraw,ImageEnhance
 import base64
 from io import BytesIO
 import numpy as np
@@ -16,7 +16,7 @@ def check_allowed_file(filename):
 
 # Function to create a dither pattern
 def create_dither_pattern(image):
-    
+    ## So the data pattern we have to check our ditter file and figure how we are going to do the rows fomular acording to the color of the alpha
     size=(image.width, image.height)
     pattern = []
     for y in range(size[1]):
@@ -26,13 +26,14 @@ def create_dither_pattern(image):
         pattern.append(row)
     return pattern
 
+
 # Function to apply dither effect with custom pattern and overlay blending
 def apply_dither_effect(image):
     # Step 1: Create a custom dither pattern
     dither_pattern = create_dither_pattern(image)
     
     # Step 2: Create a new image with the dither pattern
-    dither_image = Image.new('L', (len(dither_pattern[0]), len(dither_pattern)))
+    dither_image = Image.new('RGB', (len(dither_pattern[0]), len(dither_pattern)))
     dither_image.putdata(sum(dither_pattern, []))
     #dither_image = dither_image.resize(image.size, Image.NEAREST)
     print("Dither image mode:", dither_image.mode)
@@ -40,10 +41,15 @@ def apply_dither_effect(image):
     print("Input image mode:", image.mode)
     print("Dither convered image mode:", dither_image.mode)
     
+    # Create a new white image
+    white_bg = Image.new('RGB',(image.width, image.height), color='white' )
+	
+    pseduditter = Image.blend(white_bg,dither_image, alpha=0.7)
+    pseduditter = pseduditter.convert('RGB')
     # Step 4: Apply dither effect to the input image using overlay blending
     #dittered_img = Image.blend(image, dither_image, alpha=0.24)
-    dittered_img = ImageChops.overlay(image,dither_image)
-    
+    dittered_img = ImageChops.overlay(image,pseduditter)
+    dittered_img = dittered_img.convert('RGB')
     # Step  5Apply posterization effect
     #posterized_image = dittered_img
     #posterized_image = dittered_img.filter(ImageFilter.ModeFilter(8))
@@ -74,12 +80,12 @@ def index():
 			print('Image Format:', img.format)
 			print('Image Size:',img.size)
 			print('Image Mode:',img.mode)
-			# Making sure to convert the image to RGB sence jpeg doesnt support RGBA
+			# Making sure to convert the image to RGB sence jpeg doesnt support RGBA - imageOps can only handle L and RGB, so the Alpha will have to be converted before colorizing
 			## you might want to think better on the whole image.mode https://pillow.readthedocs.io/en/stable/handbook/concepts.html
 			# A DUH, if we want to work with RGBA, the we dont need to convert we play with enchances, LIKE SATURATION AND BRIGHTNESS, All while still keeping that
 			img = img.convert('RGB')
 			
-			 # Resize the image if its width exceeds 400px
+			 # Resize the image if its width exceeds 400px - also look at quantize https://www.geeksforgeeks.org/python-pil-image-quantize-method/?ref=ml_lbp
 			max_width = 250
 			if img.width > max_width:
 				ratio = max_width / img.width
@@ -87,20 +93,40 @@ def index():
 				img = img.resize((max_width, new_height))
 			
             # Convert the image to grayscale
-			img = ImageOps.grayscale(img)
-			print('greyscale img:',img.mode)
+			#img = ImageOps.grayscale(img)
+			img_greyscale = ImageEnhance.Color(img)
+			img_desaturated = img_greyscale.enhance(0.0)
+			print('greyscale img:',img_desaturated.mode)
+			
    
 			#img = img.convert('1',dither=Image.FLOYDSTEINBERG)  (this turns into 1bit image)
 			 # Apply dither effect
             
-			processed_image = apply_dither_effect(img)
+			processed_image = apply_dither_effect(img_desaturated)
+			print('Processed image beofre:',processed_image.mode)
+			processed_image = processed_image.convert('L')
+			print('prossed image after:',processed_image.mode)
+
+	
 			
-			newSize = (processed_image.width*3,processed_image.height*3)
-			processed_image = processed_image.resize(newSize, Image.NEAREST)
+
+			# Apply gradient map to the posterized image
+			
+			#final_image = Image.blend(processed_image, gradient_map, alpha=0.5)
+			# Define the color for colorizing (light yellow in this example)
+			dark = (102, 0, 51)
+			middle = (255, 153, 51)
+			light = (255, 255, 153)
+
+			# Apply colorizing effect
+			final_image = ImageOps.colorize(processed_image, black=dark, white=light, mid=middle, blackpoint=0, whitepoint=255, midpoint=127)
+			
+			newSize = (final_image.width*3,final_image.height*3)
+			final_image = final_image.resize(newSize, Image.NEAREST)
    			
       
 			with BytesIO() as buf:
-				processed_image.save(buf, 'jpeg')
+				final_image.save(buf, 'jpeg')
 				image_bytes = buf.getvalue()
 			encoded_string = base64.b64encode(image_bytes).decode()         
 			
