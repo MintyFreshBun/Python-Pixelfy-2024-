@@ -6,6 +6,7 @@ import uuid
 
 app = Flask(__name__)
 
+##This is the generated part used to testing and research on how python , flassk and pillow to see how it works
 UPLOAD_FOLDER = 'uploads'
 
 @app.route('/', methods=['GET','POST'])

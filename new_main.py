@@ -9,9 +9,6 @@ import numpy as np
 
 allowed_exts = {'jpg', 'jpeg','png','JPG','JPEG','PNG'}
 
-# Define the dither matrix for 4x4 ordered dithering
-#dither_matrix = np.array([[0, 8, 2, 10],[12, 4, 14, 6],[3, 11, 1, 9],[15, 7, 13, 5]])
-dither_matrix = np.array([[0,2],[3,1]])
 
 
 app = Flask(__name__)
@@ -19,57 +16,36 @@ app = Flask(__name__)
 def check_allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_exts
 
-
-# Function to create a dither pattern
-def create_dither_pattern(image):
-    
-    #dither_image = Image.new('L', (width, height))
-    #for y in range(height):
-        #for x in range(width):
-            #threshold = dither_matrix[y % 4][x % 4]
-            #pixel_value = threshold * 16
-            #dither_image.putpixel((x, y), pixel_value)
-    ## So i THeory it works, but how ever it takes a while to calculate and and setup the values,
-    ##So we might have scrap the calculate and instead try with a ditter patern image instead, we can create a few of our own and well try that
-    
-    
-    ## So the data pattern we have to check our ditter file and figure how we are going to do the rows fomular acording to the color of the alpha
-    size=(image.width, image.height)
-    pattern = []
-    for y in range(size[1]):
-        row = []
-        for x in range(size[0]):
-            #row.append(255 if (x + y) % 2 == 0 else 0)
-            threshold = dither_matrix[y % 2][x % 2]
-            
-            print('treshhold value:',threshold ,end="\r")
-            row.append(threshold * 4)
-        pattern.append(row)
-        
-    return pattern
-
+# Load the pattern image
+pattern_image = Image.open("assets/ditter_weak2.png")
 
 # Function to apply dither effect with custom pattern and overlay blending
 def apply_dither_effect(image):
-    # Step 1: Create a custom dither pattern
-    dither_pattern = create_dither_pattern(image)
+    # Step 1: Get the pattern png
+    tiled_image = Image.new('RGBA', (image.width, image.height))
+	# Calculate the number of repetitions needed to cover the entire area
+    repetitions_x = (image.width + pattern_image.width - 1) // pattern_image.width
+    repetitions_y = (image.height + pattern_image.height - 1) // pattern_image.height
     
-    # Step 2: Create a new image with the dither pattern
-    dither_image = Image.new('L', (len(dither_pattern[0]), len(dither_pattern)))
-    dither_image.putdata(sum(dither_pattern, []))
+    # Tile the pattern image across the entire area
+    for y in range(repetitions_y):
+        for x in range(repetitions_x):
+            tiled_image.paste(pattern_image, (x * pattern_image.width, y * pattern_image.height))
+   
     #dither_image = dither_image.resize(image.size, Image.NEAREST)
-    print("Dither image mode:", dither_image.mode)
+    print("Dither image mode:", tiled_image.mode)
     
     print("Input image mode:", image.mode)
-    dither_image = dither_image.convert('RGB')
+    dither_image = tiled_image.convert('RGB')
     print("Dither convered image mode:", dither_image.mode)
     
     # Create a new white image
-    white_bg = Image.new('RGB',(image.width, image.height), color='white' )
+    white_bg = Image.new('RGB',(image.width, image.height), color='gray' )
 	
-    pseduditter = Image.blend(white_bg,dither_image, alpha=1)
+    pseduditter = Image.blend(white_bg,dither_image, alpha=0.45)
     pseduditter = pseduditter.convert('RGB')
     # Step 4: Apply dither effect to the input image using overlay blending
+    ## because ImageChopss only works with L and RGB , anything with alpha doesnt work, however, if this is overlay, then mid gray will be invisible
     #dittered_img = Image.blend(image, dither_image, alpha=0.24)
     dittered_img = ImageChops.overlay(image,pseduditter)
     dittered_img = dittered_img.convert('RGB')
