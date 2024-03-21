@@ -5,10 +5,22 @@ from PIL import Image,ImageOps ,ImageFilter,ImageChops ,ImageDraw,ImageEnhance
 import base64
 from io import BytesIO
 import numpy as np
+from blendmodes.blend import blendLayers, BlendType
 
 
 allowed_exts = {'jpg', 'jpeg','png','JPG','JPEG','PNG'}
 
+
+##To do List
+## - Make a proper ressponce for when you dont post a file but without removing the previous image
+## - have the option to change number of steps
+## - Option to change the streaght of the ditter
+## - Option for greyscale version
+## - Option to set bightness
+## - Option to set saturation
+## - Option to set contrasts
+## - change from a PNG premate , make the base template in code with diferent matrixes to select. x2 x4 x16 , ordered ditter, scaline ditter etc (search on that)
+## - the option to select a color pallet from the images we have or from a code file list like a json or something
 
 
 app = Flask(__name__)
@@ -18,6 +30,8 @@ def check_allowed_file(filename):
 
 # Load the pattern image
 pattern_image = Image.open("assets/ditter_weak2.png")
+# Pallet image test
+pallet_img = Image.open("assets/mulfok32-32x.png")
 
 # Function to apply dither effect with custom pattern and overlay blending
 def apply_dither_effect(image):
@@ -40,23 +54,22 @@ def apply_dither_effect(image):
     print("Dither convered image mode:", dither_image.mode)
     
     # Create a new white image
-    white_bg = Image.new('RGB',(image.width, image.height), color='gray' )
+    white_bg = Image.new('RGB',(image.width, image.height), color='grey' )
 	
-    pseduditter = Image.blend(white_bg,dither_image, alpha=0.45)
+    pseduditter = Image.blend(white_bg,dither_image, alpha=1)
     pseduditter = pseduditter.convert('RGB')
     # Step 4: Apply dither effect to the input image using overlay blending
     ## because ImageChopss only works with L and RGB , anything with alpha doesnt work, however, if this is overlay, then mid gray will be invisible
-    #dittered_img = Image.blend(image, dither_image, alpha=0.24)
-    dittered_img = ImageChops.overlay(image,pseduditter)
+    # using blendlayress instead of the one on Pillow sence this those ACTUALLy do what i want
+    dittered_img = blendLayers(image,pseduditter,BlendType.OVERLAY,0.5)
     dittered_img = dittered_img.convert('RGB')
     # Step  5Apply posterization effect
-    #posterized_image = dittered_img
-    #posterized_image = dittered_img.filter(ImageFilter.ModeFilter(8))
-    posterized_image = ImageOps.posterize(dittered_img,3)
+    
+    quantized_image = dittered_img.quantize(colors=8, method=None, kmeans=0, palette=pallet_img, dither=0)
     
     # Step 6: Return the processed image
     #return processed_image
-    return posterized_image
+    return quantized_image
 
 @app.route("/",methods=['GET', 'POST'])
 def index():
@@ -93,33 +106,22 @@ def index():
 			
             # Convert the image to grayscale
 			#img = ImageOps.grayscale(img)
-			img_greyscale = ImageEnhance.Color(img)
-			img_desaturated = img_greyscale.enhance(0.0)
-			print('greyscale img:',img_desaturated.mode)
+			#img_greyscale = ImageEnhance.Color(img)
+			#img_desaturated = img_greyscale.enhance(0.0)
+			#print('greyscale img:',img_desaturated.mode)
 			
    
 			#img = img.convert('1',dither=Image.FLOYDSTEINBERG)  (this turns into 1bit image)
 			 # Apply dither effect
             
-			processed_image = apply_dither_effect(img_desaturated)
+			processed_image = apply_dither_effect(img)
 			print('Processed image beofre:',processed_image.mode)
-			processed_image = processed_image.convert('L')
+			processed_image = processed_image.convert('RGB')
 			print('prossed image after:',processed_image.mode)
 
-
-			# Apply gradient map to the posterized image
 			
-			#final_image = Image.blend(processed_image, gradient_map, alpha=0.5)
-			# Define the color for colorizing (light yellow in this example)
-			dark = (102, 0, 51)
-			middle = (255, 153, 51)
-			light = (255, 255, 153)
-
-			# Apply colorizing effect
-			final_image = ImageOps.colorize(processed_image, black=dark, white=light, mid=middle, blackpoint=0, whitepoint=255, midpoint=127)
-			
-			newSize = (final_image.width*3,final_image.height*3)
-			final_image = final_image.resize(newSize, Image.NEAREST)
+			newSize = (processed_image.width*3,processed_image.height*3)
+			final_image = processed_image.resize(newSize, Image.NEAREST)
    			
       
 			with BytesIO() as buf:
