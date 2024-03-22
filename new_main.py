@@ -14,18 +14,13 @@ previous_image_data = None
 
 
 ##To do List
-## - have the option to change number of steps
-## - Option to change the streaght of the ditter
-## - Option for greyscale version 
-## - Option to set bightness - X
 
-## - Option to set contrasts - X
 ## - change from a PNG premate , make the base template in code with diferent matrixes to select. x2 x4 x16 , ordered ditter, scaline ditter etc (search on that)
-## - the option to select a color pallet from the images we have or from a code file list like a json or something
+
 
 
 app = Flask(__name__)
-
+# File checker
 def check_allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_exts
 
@@ -34,8 +29,8 @@ pattern_image = Image.open("assets/ditter_weak2.png")
 # Pallet image test
 pallet_img = Image.open("assets/mulfok32-32x.png")
 
-# Function to apply dither effect with custom pattern and overlay blending
-def apply_dither_effect(image,step_value,dither_value):
+# Function to apply dither and Quantization
+def img_quantization(image,step_value,dither_value):
 	# Step 1: Get the pattern png
 	tiled_image = Image.new('RGBA', (image.width, image.height))
 	# Calculate the number of repetitions needed to cover the entire area
@@ -74,6 +69,8 @@ def apply_dither_effect(image,step_value,dither_value):
 	return quantized_image
 
 
+
+
 @app.route("/",methods=['GET', 'POST'])
 def index():
 	global previous_image_data
@@ -83,11 +80,14 @@ def index():
 		bright_value = float(request.form['brightness'])
 		step_value = int(request.form['steps'])
 		contrast_value = float(request.form['contrast'] )
-		dither_value = float(request.form['dither_op'])
+		dither_value = float(request.form['dither_op'])        
+		grayscale_value =  bool(request.form.get('grayscale'))
+  
 		print('Brightness:',bright_value)
 		print('Contrast:',contrast_value)
 		print('Color Count Steps:',step_value)
 		print('Dither Opacity:',dither_value)
+		print('Grayscale Set:',grayscale_value)
 		
 		if 'file' not in request.files:
 			if previous_image_data == None:
@@ -110,9 +110,13 @@ def index():
 	  
 			contrast = ImageEnhance.Contrast(img)
 			img = contrast.enhance(contrast_value)
+
+			# Apply grayscale conversion if checkbox is checked
+			if grayscale_value:				
+				enhancer = ImageEnhance.Color(img)
+				img = enhancer.enhance(0)
 	
-			
-			processed_image = apply_dither_effect(img,step_value,dither_value)
+			processed_image = img_quantization(img,step_value,dither_value)
 			print('Processed image beofre:',processed_image.mode)
 			processed_image = processed_image.convert('RGB')
 			print('prossed image after:',processed_image.mode)
@@ -150,9 +154,14 @@ def index():
 	  
 			contrast = ImageEnhance.Contrast(img)
 			img = contrast.enhance(contrast_value)
+
+			# Apply grayscale conversion if checkbox is checked
+			if grayscale_value:				
+				enhancer = ImageEnhance.Color(img)
+				img = enhancer.enhance(0)
 	
 			
-			processed_image = apply_dither_effect(img,step_value,dither_value)
+			processed_image = img_quantization(img,step_value,dither_value)
 			print('Processed image beofre:',processed_image.mode)
 			processed_image = processed_image.convert('RGB')
 			print('prossed image after:',processed_image.mode)
@@ -185,19 +194,14 @@ def index():
 			img = img.convert('RGB')
 			
 			 # Resize the image if its width exceeds 400px
+			 # Try to have the option to choose a size of pixels and then calculate the resize after 
 			max_width = 250
 			if img.width > max_width:
 				ratio = max_width / img.width
 				new_height = int(img.height * ratio)
 				img = img.resize((max_width, new_height))
 			
-			# Convert the image to grayscale
-			#img = ImageOps.grayscale(img)
-			#img_greyscale = ImageEnhance.Color(img)
-			#img_desaturated = img_greyscale.enhance(0.0)
-			#print('greyscale img:',img_desaturated.mode)
-			
-   
+		
 			#img = img.convert('1',dither=Image.FLOYDSTEINBERG)  (this turns into 1bit image)
 			 # Apply dither effect
 			# Apply the contrest and brightness filters
@@ -206,14 +210,20 @@ def index():
 	  
 			contrast = ImageEnhance.Contrast(img)
 			img = contrast.enhance(contrast_value)
+
+			# Apply grayscale conversion if checkbox is checked
+			if grayscale_value:				
+				enhancer = ImageEnhance.Color(img)
+				img = enhancer.enhance(0)
 	
 			
-			processed_image = apply_dither_effect(img,step_value,dither_value)
+			processed_image = img_quantization(img,step_value,dither_value)
 			print('Processed image beofre:',processed_image.mode)
 			processed_image = processed_image.convert('RGB')
 			print('prossed image after:',processed_image.mode)
 
-			
+
+			# Try to have the option to choose a size of pixels and then calculate the resize after 
 			newSize = (processed_image.width*3,processed_image.height*3)
 			final_image = processed_image.resize(newSize, Image.NEAREST)
    			
@@ -223,11 +233,11 @@ def index():
 				image_bytes = buf.getvalue()
 			encoded_string = base64.b64encode(image_bytes).decode()  
 				   
-		return render_template('index.html', img_data=encoded_string , bright_value=bright_value ,step_value=step_value,contrast_value=contrast_value,dither_value=dither_value), 200
+		return render_template('index.html', img_data=encoded_string , bright_value=bright_value ,step_value=step_value,contrast_value=contrast_value,dither_value=dither_value, grayscale_value=grayscale_value), 200
 		
 		
 	else:
-		return render_template('index.html', img_data="", bright_value=1 ,step_value=16,contrast_value=1,dither_value=0.25 ), 200
+		return render_template('index.html', img_data="", bright_value=1 ,step_value=16,contrast_value=1,dither_value=0.25, grayscale_value=False ), 200
 
 if __name__ == "__main__":
 	app.debug=True
