@@ -17,24 +17,71 @@
     <h2>Processed Image:</h2>
     <img src="{{ processed_image }}" alt="Processed Image" />
     {% endif %}-->
-    <h1>Posterize Image</h1>
-    <p>Upload an image to apply posterization.</p>
-    <form method="post" enctype="multipart/form-data">
-      <p>
-        <input type="file" id="file" name="file" /><input
-          type="submit"
-          value="Upload"
+    <div style="text-align: center">
+      <h1>Posterize Image</h1>
+      <p>Upload an image to apply posterization.</p>
+      <form method="post" enctype="multipart/form-data">
+        <p>
+          <label for="image">Upload Image:</label>
+          <input type="file" id="file" name="file" /><br /><br />
+
+          <label for="brightness">Brightness:</label>
+          <input
+            type="number"
+            step="0.10"
+            max="2"
+            min="0"
+            id="brightness"
+            name="brightness"
+            value="{{bright_value}}"
+          /><br /><br />
+
+          <label for="contrast">Contrast:</label>
+          <input
+            type="number"
+            step="0.10"
+            max="2"
+            min="0"
+            id="contrast"
+            name="contrast"
+            value="{{contrast_value}}"
+          /><br /><br />
+
+          <label for="steps">Bits Steps:</label>
+          <input
+            type="steps"
+            step="1"
+            max="256"
+            min="1"
+            id="steps"
+            name="steps"
+            value="{{step_value}}"
+          /><br /><br />
+
+          <label for="dither_op">Dither Strength:</label>
+          <input
+            type="dither_op"
+            step="0.10"
+            max="1"
+            min="0"
+            id="dither_op"
+            name="dither_op"
+            value="{{dither_value}}"
+          /><br /><br />
+
+          <input type="submit" value="Upload" />
+        </p>
+
+        {% if img_data %}
+        <h2>Processed Image:</h2>
+        <img
+          src="data:image/jpeg;base64,{{ img_data }}"
+          id="img-upload"
+          alt="img_data"
+          class="img-upload"
         />
-      </p>
-      {% if img_data %}
-      <h2>Processed Image:</h2>
-      <img
-        src="data:image/jpeg;base64,{{ img_data }}"
-        id="img-upload"
-        alt="img_data"
-        class="img-upload"
-      />
-      {% endif %}
-    </form>
+        {% endif %}
+      </form>
+    </div>
   </body>
 </html>
