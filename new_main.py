@@ -10,6 +10,10 @@ from blendmodes.blend import blendLayers, BlendType
 
 allowed_exts = {'jpg', 'jpeg','png','JPG','JPEG','PNG'}
 
+color_list ={"local-colors","aap-64-32x","blessing-8x","blk-neo-32x","blk-nx64-32x","bubblegum-16-8x","endesga-32-32x","gated-8x",
+"island-joy-16-8x","late-night-sunrise-8x","mulfok32-32x","na16-8x","oil-6-8x","resurrect-64-32x","twilight-5-8x",
+"vanilla-milkshake-8x"}
+
 previous_image_data = None
 
 
@@ -27,10 +31,10 @@ def check_allowed_file(filename):
 # Load the pattern image
 pattern_image = Image.open("assets/ditter_weak2.png")
 # Pallet image test
-pallet_img = Image.open("assets/mulfok32-32x.png")
+#pallet_img = Image.open("assets/mulfok32-32x.png")
 
 # Function to apply dither and Quantization
-def img_quantization(image,step_value,dither_value):
+def img_quantization(image,step_value,dither_value,grayscale_value,color_value):
 	# Step 1: Get the pattern png
 	tiled_image = Image.new('RGBA', (image.width, image.height))
 	# Calculate the number of repetitions needed to cover the entire area
@@ -62,7 +66,13 @@ def img_quantization(image,step_value,dither_value):
 	# Step  5Apply posterization effect
 	## ok palette may not be that great sence it ignores colors and with that we might need to rely on something else
 	## solution to that might be here : https://stackoverflow.com/questions/71581267/apply-a-color-map-gradient-map-to-an-image-using-python
-	quantized_image = dittered_img.quantize(colors=step_value, method=None, kmeans=0, palette=None, dither=0)
+	pallet_set = None
+	if grayscale_value == "grayscale"  or color_value == "local-colors":
+		pallet_set = None
+	else:		
+		pallet_set = Image.open("assets/" + color_value + ".png")
+
+	quantized_image = dittered_img.quantize(colors=step_value, method=None, kmeans=0, palette=pallet_set, dither=0)
 	
 	# Step 6: Return the processed image
 	#return processed_image
@@ -81,13 +91,21 @@ def index():
 		step_value = int(request.form['steps'])
 		contrast_value = float(request.form['contrast'] )
 		dither_value = float(request.form['dither_op'])        
-		grayscale_value =  bool(request.form.get('grayscale'))
+		grayscale_value =  str(request.form.get('grayscale'))
+		color_value =  str(request.form.get('colors'))
+		
+  
+  
   
 		print('Brightness:',bright_value)
 		print('Contrast:',contrast_value)
 		print('Color Count Steps:',step_value)
 		print('Dither Opacity:',dither_value)
 		print('Grayscale Set:',grayscale_value)
+		print('Color pallet name:',color_value)
+		
+  
+  
 		
 		if 'file' not in request.files:
 			if previous_image_data == None:
@@ -112,11 +130,11 @@ def index():
 			img = contrast.enhance(contrast_value)
 
 			# Apply grayscale conversion if checkbox is checked
-			if grayscale_value:				
+			if grayscale_value == "grayscale":				
 				enhancer = ImageEnhance.Color(img)
 				img = enhancer.enhance(0)
 	
-			processed_image = img_quantization(img,step_value,dither_value)
+			processed_image = img_quantization(img,step_value,dither_value,grayscale_value,color_value)
 			print('Processed image beofre:',processed_image.mode)
 			processed_image = processed_image.convert('RGB')
 			print('prossed image after:',processed_image.mode)
@@ -156,12 +174,12 @@ def index():
 			img = contrast.enhance(contrast_value)
 
 			# Apply grayscale conversion if checkbox is checked
-			if grayscale_value:				
+			if grayscale_value == "grayscale":			
 				enhancer = ImageEnhance.Color(img)
 				img = enhancer.enhance(0)
 	
 			
-			processed_image = img_quantization(img,step_value,dither_value)
+			processed_image = img_quantization(img,step_value,dither_value,grayscale_value,color_value)
 			print('Processed image beofre:',processed_image.mode)
 			processed_image = processed_image.convert('RGB')
 			print('prossed image after:',processed_image.mode)
@@ -212,12 +230,12 @@ def index():
 			img = contrast.enhance(contrast_value)
 
 			# Apply grayscale conversion if checkbox is checked
-			if grayscale_value:				
+			if grayscale_value == "grayscale":				
 				enhancer = ImageEnhance.Color(img)
 				img = enhancer.enhance(0)
 	
 			
-			processed_image = img_quantization(img,step_value,dither_value)
+			processed_image = img_quantization(img,step_value,dither_value,grayscale_value,color_value)
 			print('Processed image beofre:',processed_image.mode)
 			processed_image = processed_image.convert('RGB')
 			print('prossed image after:',processed_image.mode)
@@ -233,11 +251,11 @@ def index():
 				image_bytes = buf.getvalue()
 			encoded_string = base64.b64encode(image_bytes).decode()  
 				   
-		return render_template('index.html', img_data=encoded_string , bright_value=bright_value ,step_value=step_value,contrast_value=contrast_value,dither_value=dither_value, grayscale_value=grayscale_value), 200
+		return render_template('index.html', img_data=encoded_string , bright_value=bright_value ,step_value=step_value,contrast_value=contrast_value,dither_value=dither_value, grayscale_value=grayscale_value,color_list=color_list,color_value=color_value), 200
 		
 		
 	else:
-		return render_template('index.html', img_data="", bright_value=1 ,step_value=16,contrast_value=1,dither_value=0.25, grayscale_value=False ), 200
+		return render_template('index.html', img_data="", bright_value=1 ,step_value=8,contrast_value=1,dither_value=0.25, grayscale_value="grayscale",color_list=color_list,color_value="local-colors" ), 200
 
 if __name__ == "__main__":
 	app.debug=True
