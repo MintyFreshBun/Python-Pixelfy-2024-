@@ -1,10 +1,10 @@
 
 from flask import Flask, request, redirect, render_template
 from werkzeug.utils import secure_filename
-from PIL import Image,ImageOps ,ImageFilter,ImageChops ,ImageDraw,ImageEnhance
+from PIL import Image,ImageEnhance
 import base64
 from io import BytesIO
-import numpy as np
+
 from blendmodes.blend import blendLayers, BlendType
 
 
