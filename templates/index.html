@@ -3,18 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Posterize Image</title>
+    <title>Python Pixelfy Images</title>
     <script  src="/static/index.js"></script>
+    <link rel="stylesheet" href="/static/main.css"/>
+    
   </head>
   <body>
-    <div style="text-align: center">
-      <h1>Posterize Image</h1>
-      <p>Upload an image to apply posterization.</p>
-      <button id="resetButton">Reset Values</button><br /><br />
-      <form method="post" enctype="multipart/form-data">
-        <p>
+    <div class=" flexbox">
+      <h1>Pixelfy Your Images</h1>
+      <p>Upload an image to apply the Pixel filter.</p>
+      <button id="resetButton" class="btn" >Reset Values</button><br /><br />
+      <form class="flexbox formbox" method="post" enctype="multipart/form-data">
+        <div>
           <label for="image">Upload Image:</label>
-          <input type="file" id="file" name="file" /><br /><br />
+          <input type="file" id="file" name="file" class="filebox" /><br /><br />
 
           <label for="brightness">Brightness:</label>
           <input
@@ -24,6 +26,7 @@
             min="0"
             id="brightness"
             name="brightness"
+            class="sliderStyle"
             value="{{bright_value}}"
           />
           <span>Value: <span id="brightness_output"></span></span><br /><br />
@@ -35,6 +38,7 @@
             max="2"
             min="0"
             id="contrast"
+            class="sliderStyle"
             name="contrast"
             value="{{contrast_value}}"
           /><span>Value: <span id="contrast_output"></span></span><br /><br />
@@ -47,6 +51,7 @@
             min="1"
             id="steps"
             name="steps"
+            
             value="{{step_value}}"
           /><br /><br />
 
@@ -57,9 +62,24 @@
             max="1"
             min="0"
             id="dither_op"
+            class="sliderStyle"
             name="dither_op"
+            
             value="{{dither_value}}"
           /><span>Value: <span id="dither_output"></span></span><br /><br />
+
+          <label for="pixel_size">Pixelart Width Size:</label>
+          <input
+            type="range"
+            step="1"
+            max="350"
+            min="30"
+            id="pixel_size"
+            class="sliderStyle"
+            name="pixel_size"
+            
+            value="{{pixel_size}}"
+          /><span>Value: <span id="pixel_output"></span></span><br /><br />
 
           <label for="grayscale">Set to Grayscale</label>
           <input type="radio" id="grayscale" name="grayscale"
@@ -80,8 +100,8 @@
         </div><br />
           
 
-          <input type="submit" value="Upload" />
-        </p>
+          <input type="submit" value="Upload" class="btn" />
+        </div>
 
         {% if img_data %}
         <h2>Processed Image:</h2>

@@ -1,5 +1,8 @@
 ## Setup Instructions
 
+      Python Pixelfy Version 1
+
+
     1. Clone the repository:
        ```bash
        git clone https://github.com/MintyFreshBun/Python-Pixelfy-2024-

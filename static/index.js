@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     slider_contrast.value = 1;
     slider_steps.value = 16;
     slider_dither.value = 0.25;
+    slider_size.value = 300;
 
     updateSliderValue(slider_bright, output_bright);
     updateSliderValue(slider_contrast, contrast_output);
@@ -17,11 +18,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
   const slider_contrast = document.getElementById("contrast");
   const slider_steps = document.getElementById("steps");
   const slider_dither = document.getElementById("dither_op");
+  const slider_size = document.getElementById("pixel_size");
 
   const output_bright = document.getElementById("brightness_output");
   const contrast_output = document.getElementById("contrast_output");
   const steps_output = document.getElementById("steps_output");
   const dither_output = document.getElementById("dither_output");
+  const size_output = document.getElementById("pixel_output");
 
   // Function to update the slider values
   function updateSliderValue(slider, valueElement) {
@@ -38,14 +41,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
     updateSliderValue(slider_contrast, contrast_output);
   });
 
-  // Event listener for opacity slider
+  // Event listener for steps slider
   slider_steps.addEventListener("input", function () {
     updateSliderValue(slider_steps, steps_output);
   });
 
-  // Event listener for contrast slider
+  // Event listener for ditter slider
   slider_dither.addEventListener("input", function () {
     updateSliderValue(slider_dither, dither_output);
+  });
+
+  // Event listener for size slider
+  slider_size.addEventListener("input", function () {
+    updateSliderValue(slider_size, size_output);
   });
 
   // Update initial slider values
@@ -53,6 +61,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   updateSliderValue(slider_contrast, contrast_output);
   updateSliderValue(slider_steps, steps_output);
   updateSliderValue(slider_dither, dither_output);
+  updateSliderValue(slider_size, size_output);
 
   const select = document.getElementById("options-box");
   const option1 = document.getElementById("grayscale");

@@ -1,0 +1,35 @@
+.TestBox1 {
+  border: red 2px solid;
+}
+
+body {
+  font-family: system-ui;
+  background-color: rgb(32, 31, 34);
+  color: white;
+}
+
+.flexbox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+}
+
+.btn {
+  width: 320px;
+}
+
+.formbox {
+  padding: 8px;
+}
+
+.filebox {
+  border: solid 1px rgb(43, 43, 43);
+}
+
+.sliderStyle {
+  width: 280px;
+}
