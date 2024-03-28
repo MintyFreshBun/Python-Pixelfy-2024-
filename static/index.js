@@ -1,18 +1,4 @@
 document.addEventListener("DOMContentLoaded", function (event) {
-  resetButton.addEventListener("click", function () {
-    // Reset sliders value to default
-
-    slider_bright.value = 1;
-    slider_contrast.value = 1;
-    slider_steps.value = 16;
-    slider_dither.value = 0.25;
-    slider_size.value = 300;
-
-    updateSliderValue(slider_bright, output_bright);
-    updateSliderValue(slider_contrast, contrast_output);
-    updateSliderValue(slider_steps, steps_output);
-    updateSliderValue(slider_dither, dither_output);
-  });
   // Get the sliders and their associated value elements
   const slider_bright = document.getElementById("brightness");
   const slider_contrast = document.getElementById("contrast");
@@ -25,10 +11,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
   const steps_output = document.getElementById("steps_output");
   const dither_output = document.getElementById("dither_output");
   const size_output = document.getElementById("pixel_output");
-
   // Function to update the slider values
   function updateSliderValue(slider, valueElement) {
     valueElement.textContent = slider.value;
+  }
+
+  function updateDitherSlider(slider, valueElement) {
+    valueElement.textContent = slider.value * 100 + "%";
   }
 
   // Event listener for opacity slider
@@ -48,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
   // Event listener for ditter slider
   slider_dither.addEventListener("input", function () {
-    updateSliderValue(slider_dither, dither_output);
+    updateDitherSlider(slider_dither, dither_output);
   });
 
   // Event listener for size slider
@@ -82,6 +71,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
       select.style.display = "block";
     }
   });
+  resetButton.addEventListener("click", function () {
+    // Reset sliders value to default
+
+    slider_bright.value = 1;
+    slider_contrast.value = 1;
+    slider_steps.value = 16;
+    slider_dither.value = 0.25;
+    slider_size.value = 300;
+
+    updateSliderValue(slider_bright, output_bright);
+    updateSliderValue(slider_contrast, contrast_output);
+    updateSliderValue(slider_steps, steps_output);
+    updateSliderValue(slider_dither, dither_output);
+    updateSliderValue(slider_size, size_output);
+  });
 });
 // script.js
 
@@ -91,4 +95,9 @@ function handleRadioChange() {
 
   // Initially hide the select element
   select.style.display = option1.checked ? "none" : "block";
+}
+
+function displayFileName(input) {
+  var fileName = input.files[0].name;
+  document.getElementById("file-name").textContent = fileName;
 }
