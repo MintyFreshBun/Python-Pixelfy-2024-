@@ -25,7 +25,7 @@
 
 This is a project i created allows to turn pictures into pixelart.
 I am a pixel artist and wondered if it was possible to translate the method i use for my pixelart , into coding and into an application.
-This game me an opportunity to explore and put my python skills to the test!
+This gave me an opportunity to explore and put my python skills to the test in a web application enviroement along with faslk.
 
 ## Built With
 
