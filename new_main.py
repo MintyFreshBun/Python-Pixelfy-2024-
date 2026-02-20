@@ -1,4 +1,4 @@
-
+from PIL.Image import Resampling
 from flask import Flask, request, redirect, render_template
 from werkzeug.utils import secure_filename
 from PIL import Image,ImageEnhance
@@ -28,8 +28,8 @@ pattern_image = Image.open("assets/ditter_weak2.png")
 
 # Function to apply dither and Quantization
 def img_quantization(image,step_value,dither_value,grayscale_value,color_value,bright_value,contrast_value,size_value):
-    ## Step 1 : prepare the image with the contrasts and scale needed
-     # Resize the image if its width exceeds the value inserted
+	## Step 1 : prepare the image with the contrasts and scale needed
+	 # Resize the image if its width exceeds the value inserted
 	max_width = size_value
 	if image.width > max_width:
 		ratio = max_width / image.width
@@ -49,7 +49,7 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 		enhancer = ImageEnhance.Color(image)
 		image = enhancer.enhance(0)
 
-    
+
 	# Step 2: Get the pattern png
 	tiled_image = Image.new('RGBA', (image.width, image.height))
 	# Calculate the number of repetitions needed to cover the entire area
@@ -89,36 +89,36 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 
 
 def image_resize(processed_image):
-    #Calculation for the factor acording to the width acording to the pattern formula
-    scaling_factor = 0;
-    if processed_image.width <= 38:
-        scaling_factor = 14
-        print("Scaling factor:",scaling_factor)
-    elif processed_image.width >= 350:	
-        scaling_factor = 2
-        print("Scaling factor:",scaling_factor)
+	#Calculation for the factor acording to the width acording to the pattern formula
+	scaling_factor = 0;
+	if processed_image.width <= 38:
+		scaling_factor = 14
+		print("Scaling factor:",scaling_factor)
+	elif processed_image.width >= 350:
+		scaling_factor = 2
+		print("Scaling factor:",scaling_factor)
 		 
-     
-    else:
-        # Define the slope (m) and y-intercept (c)
-        m = -3 / 80
-        c = 115 / 8
+
+	else:
+		# Define the slope (m) and y-intercept (c)
+		m = -3 / 80
+		c = 115 / 8
 		
 		# Calculate the scaling factor using the linear equation
-        
-        scaling_factor = m * processed_image.width + c
-        print("Scaling factor:",scaling_factor)
-        scaling_factor = round(scaling_factor)
-        print("Scaling factor rounded:",scaling_factor)
-        
-        while (scaling_factor*processed_image.width >900):
-            scaling_factor= scaling_factor -1
-            print("Scaling factor reduced:",scaling_factor)
-    
-    newSize = (processed_image.width*scaling_factor,processed_image.height*scaling_factor)
-    final_image = processed_image.resize(newSize, Image.NEAREST)
-    return final_image
-    
+
+		scaling_factor = m * processed_image.width + c
+		print("Scaling factor:",scaling_factor)
+		scaling_factor = round(scaling_factor)
+		print("Scaling factor rounded:",scaling_factor)
+
+		while (scaling_factor*processed_image.width >900):
+			scaling_factor= scaling_factor -1
+			print("Scaling factor reduced:",scaling_factor)
+
+	new_size = (processed_image.width*scaling_factor,processed_image.height*scaling_factor)
+	final_image = processed_image.resize(new_size, Resampling.NEAREST)
+	return final_image
+
 
 
 @app.route("/",methods=['GET', 'POST'])
@@ -185,7 +185,7 @@ def index():
 
 			## upscale the image to show on the page 
 			final_image = image_resize(processed_image)
-   			
+
 			with BytesIO() as buf:
 				final_image.save(buf, 'jpeg')
 				image_bytes = buf.getvalue()

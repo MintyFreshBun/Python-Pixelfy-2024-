@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Python Pixelfy Images</title>
     <script  src="/static/index.js"></script>
+
     <link rel="stylesheet" href="/static/main.css"/>
     
   </head>
   <body>
-    <div class=" flexbox">
+    <div class="TestBox1 flexbox">
       <h1>Pixelfy Your Images</h1>
       <p>Upload an image to apply the Pixel filter.</p>
       <button id="resetButton" class="btn" >Reset Values</button>
-      <form class="flexbox formbox" method="post" enctype="multipart/form-data">
-        <div class="flexbox">
+      <form class="containerFlex formbox TextBox2" method="post" enctype="multipart/form-data">
+        <div class=" TextBox3">
           <div style="position: relative;">
              <label for="file" class="custom-file-upload">
               <span id="file-name"> Choose File</span>
@@ -114,16 +115,17 @@
 
           <input type="submit" value="Upload" class="btn" />
         </div>
-
-        {% if img_data %}
-        <h2>Processed Image:</h2>
-        <img
-          src="data:image/jpeg;base64,{{ img_data }}"
-          id="img-upload"
-          alt="img_data"
-          class="img-upload"
-        />
-        {% endif %}
+        <div class="flexbox TextBox4">
+            <h2>Processed Image:</h2>
+            {% if img_data %}
+            <img
+              src="data:image/jpeg;base64,{{ img_data }}"
+              id="img-upload"
+              alt="img_data"
+              class="img-upload"
+            />
+            {% endif %}
+          </div>
       </form>
     </div>
    

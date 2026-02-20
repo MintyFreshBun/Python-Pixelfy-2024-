@@ -2,6 +2,18 @@
   border: red 2px solid;
 }
 
+.TextBox2 {
+  border: green 2px solid;
+}
+
+.TextBox3 {
+  border: blue 2px solid;
+}
+
+.TextBox4 {
+  border: purple 2px solid;
+}
+
 body {
   font-family: system-ui;
   background-color: rgb(32, 31, 34);
@@ -17,6 +29,16 @@ body {
   align-content: center;
   align-items: center;
   gap: 14px;
+}
+
+.containerFlex {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  text-align: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
 }
 
 .btn {
