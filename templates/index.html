@@ -5,129 +5,223 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Python Pixelfy Images</title>
     <script  src="/static/index.js"></script>
-
     <link rel="stylesheet" href="/static/main.css"/>
     
   </head>
   <body>
-    <div class="TestBox1 flexbox">
-      <h1>Pixelfy Your Images</h1>
-      <p>Upload an image to apply the Pixel filter.</p>
-      <button id="resetButton" class="btn" >Reset Values</button>
-      <form class="containerFlex formbox TextBox2" method="post" enctype="multipart/form-data">
-        <div class=" TextBox3">
-          <div style="position: relative;">
-             <label for="file" class="custom-file-upload">
-              <span id="file-name"> Choose File</span>
-            </label><input type="file" id="file" name="file" onchange="displayFileName(this)" multiple="false" />
-          </div>
-          
-          <div class="slider-cont">
-            <label for="brightness">Brightness: <span id="brightness_output"></span></label>
-            <input
-              type="range"
-              step="0.01"
-              max="2"
-              min="0"
-              id="brightness"
-              name="brightness"
-              class="sliderStyle"
-              value="{{bright_value}}"
-            />
-            
-          </div>
 
-          <div class="slider-cont">
-            <label for="contrast">Contrast:<span id="contrast_output"></span></label>
-            <input
-              type="range"
-              step="0.01"
-              max="2"
-              min="0"
-              id="contrast"
-              class="sliderStyle"
-              name="contrast"
-              value="{{contrast_value}}"
-            />
-          </div>
-
-          <div class="slider-cont">
-            <label for="steps">Bits Steps:</label>
-            <input
-              type="number"
-              step="1"
-              max="256"
-              min="1"
-              id="steps"
-              name="steps"              
-              value="{{step_value}}"
-            />
-          </div>
-          <div class="slider-cont">
-            <label for="dither_op">Dither Strength: <span id="dither_output"></span></label>
-            <input
-              type="range"
-              step="0.01"
-              max="1"
-              min="0"
-              id="dither_op"
-              class="sliderStyle"
-              name="dither_op"              
-              value="{{dither_value}}"/>
-          </div>
-          <div class="slider-cont">
-            <label for="pixel_size">Pixelart Width Size: <span id="pixel_output"></span> PX</label>
-            <input
-              type="range"
-              step="1"
-              max="350"
-              min="30"
-              id="pixel_size"
-              class="sliderStyle"
-              name="pixel_size"              
-              value="{{pixel_size}}"
-            />
-          </div>
-
-          <div class="radio-cont">
-             <label for="grayscale">Set to Grayscale</label>
-            <input type="radio" id="grayscale" name="grayscale"
-            value="grayscale" {% if grayscale_value == "grayscale" %} checked {% endif %} onchange="handleRadioChange()" 
-            />
-          </div>
-         
-          <div class="radio-cont">
-            <label for="color-stat">Set to Colors</label>
-            <input type="radio" id="colors" name="grayscale"
-            value="colors" {% if grayscale_value == "colors" %} checked {% endif %} onchange="handleRadioChange()"
-            />
-          </div>
-
-          <div id="options-box" {% if  grayscale_value == "colors": %} style="display: block " {% else %} style="display: none " {% endif %} >
-            <label for="select-option" name="colors">Select Pallet:</label>
-            <select id="select-option"  name="colors" value="{{color_value}}">              
-              {% for option in color_list %}
-                <option value="{{ option }}" {% if color_value == option: %} selected {% endif %} >{{ option }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          
-
-          <input type="submit" value="Upload" class="btn" />
-        </div>
-        <div class="flexbox TextBox4">
-            <h2>Processed Image:</h2>
-            {% if img_data %}
-            <img
-              src="data:image/jpeg;base64,{{ img_data }}"
-              id="img-upload"
-              alt="img_data"
-              class="img-upload"
-            />
-            {% endif %}
-          </div>
-      </form>
+  <!-- ===== TOP SECTION ===== -->
+  <section class="section">
+    <div class="container has-text-centered">
+      <h1 class="title is-2 pb-2">Pixely Generator</h1>
+      <p class="subtitle is-5">
+        Upload an image and transform it into pixel art.
+      </p>
     </div>
-   
+  </section>
+
+  <!-- ===== MAIN AREA ===== -->
+  <section class="section pt-0">
+    <div class="container">
+      <div class="columns is-centered is-variable is-6">
+
+        <!-- ===== CONTROLS (LEFT) ===== -->
+        <div class="column is-6">
+        <!-- changing this into a fetch with ajax
+         <form method="post" enctype="multipart/form-data">
+         -->
+          <div class="box">
+
+            <h2 class="title is-5 has-text-centered">Controls</h2>
+              <div class="buttons is-centered mt-4">
+                  <input type="file" id="file" name="file" onchange="displayFileName(this)" multiple="false" accept="image/*" hidden />
+                  <label for="file" class="button is-primary">
+                      Upload
+                  </label>
+                  <button class="button is-light" id="resetButton">
+                      Reset
+                  </button>
+              </div>
+
+            <!-- Image Preview -->
+            <div class="box has-text-centered mb-5">
+
+              <figure class="image is-flex is-justify-content-center mb-2">
+                <img id="uploaded-preview"
+                     src=""
+                     alt="upload"
+                     style="display:none; max-height:300px; object-fit:contain;"/>
+              </figure>
+                <div class="has-text-grey-light ">
+                  <span id="file-name"> No image uploaded</span>
+              </div>
+            </div>
+
+            <!-- SLIDERS IN ROWS OF 2 -->
+            <div class="columns is-multiline is-mobile p-4">
+
+              <div class="column is-6 slider-wrapper">
+                  <label class="label" for="brightness">Brightness: <span id="brightness_output"></span> </label>
+                  <input
+                      type="range"
+                      step="0.01"
+                      max="2"
+                      min="0"
+                      id="brightness"
+                      name="brightness"
+                      value="{{bright_value}}"
+                  />
+              </div>
+
+              <div class="column is-6 slider-wrapper">
+                <label class="label"for="contrast">Contrast: <span id="contrast_output"></span></label>
+                <input
+                  type="range"
+                  step="0.01"
+                  max="2"
+                  min="0"
+                  id="contrast"
+                  name="contrast"
+                  value="{{contrast_value}}"
+                />
+              </div>
+
+
+              <div class="column is-6 slider-wrapper">
+                <label class="label" for="steps">Bits Steps: <span id="steps_output"></span></label>
+                 <input
+                  type="range"
+                  step="1"
+                  max="256"
+                  min="1"
+                  id="steps"
+                  name="steps"
+                  value="{{step_value}}"
+                />
+              </div>
+
+              <div class="column is-6 slider-wrapper">
+                <label class="label"for="dither_op">Dither Strength: <span id="dither_output"></span></label>
+                <input
+                  type="range"
+                  step="0.01"
+                  max="1"
+                  min="0"
+                  id="dither_op"
+                  name="dither_op"
+                  value="{{dither_value}}"/>
+              </div>
+
+              <div class="column is-6 slider-wrapper">
+                <label class="label"for="pixel_size">Number of Pixels Width: <span id="pixel_output"></span> Px</label>
+                <input
+                  type="range"
+                  step="1"
+                  max="350"
+                  min="30"
+                  id="pixel_size"
+                  name="pixel_size"
+                  value="{{pixel_size}}"
+                />
+              </div>
+
+            </div>
+
+            <!-- RADIO BUTTONS -->
+            <div class="field mt-5">
+              <label class="label"> Color Mode</label>
+
+              <label class="radio" for="grayscale">
+                  Set to Grayscale
+                <input type="radio" id="grayscale" name="grayscale"
+                value="grayscale" {% if grayscale_value == "grayscale" %} checked {% endif %} onchange="handleRadioChange()"/>
+              </label>
+
+              <label class="radio ml-4" for="color-stat">
+                Set to Colors
+                <input type="radio" id="colors" name="grayscale"
+                value="colors" {% if grayscale_value == "colors" %} checked {% endif %} onchange="handleRadioChange()"
+                />
+
+              </label>
+            </div>
+
+            <!-- Dropdown -->
+            <div class="field mt-3" id="options-box"  {% if  grayscale_value == "colors" %} style="display: block " {% else %} style="display: none " {% endif %}>
+              <label class="label" for="select-option" name="colors">Select Pallet</label>
+              <div class="select is-fullwidth">
+                <select id="select-option" name="colors" onchange="updatePalettePreview(this.value)">
+                  {% for option in color_list %}
+                    <option value="{{ option }}"
+                      {% if color_value == option %} selected {% endif %}>
+                      {{ option }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            <!-- Palette Preview Image -->
+              <div class="mt-3 has-text-centered">
+                {% if color_value %}
+                  <img id="palette-preview"
+                       src="assets/{{ color_value }}.png"
+                       alt="{{ color_value }}"
+                       style="max-height:50px; object-fit:contain; min-height: 20px ; width: 100% ;  image-rendering: pixelated;"/>
+                {% else %}
+                  <img id="palette-preview"
+                       alt=""
+                       src=""
+                       style="display:none; max-height:50px;"
+                  />
+                {% endif %}
+              </div>
+
+            </div>
+
+            <!-- PIXELY BUTTON -->
+            <div class="field mt-5">
+              <button class="button is-warning is-fullwidth is-medium" onclick="sendToBackend()">
+                PIXELY
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ===== RESULT (RIGHT) ===== -->
+        <div class="column is-6">
+          <div class="box has-text-centered">
+            <h2 class="title is-5">Result</h2>
+
+            <div class="content mt-4">
+              <div class="has-text-grey-light">
+
+                <!-- Placeholder text -->
+                  <p id="no-result-text" class="has-text-grey-light">
+                    No result yet. Upload and press Pixely.
+                  </p>
+
+                  <!-- Result image -->
+                  <figure class="image is-flex is-justify-content-center">
+                    <img id="result-preview"
+                         style="display:none; max-height:400px; object-fit:contain;">
+                  </figure>
+
+                   <!-- Action Buttons -->
+                  <div id="result-actions" style="margin-top:15px; display:none;">
+                    <button id="save-btn" class="button is-primary is-small" onclick="saveImage()">
+                      Save Image
+                    </button>
+
+                  </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
   </body>
 </html>

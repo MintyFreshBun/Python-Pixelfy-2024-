@@ -1,5 +1,5 @@
 from PIL.Image import Resampling
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template ,jsonify
 from werkzeug.utils import secure_filename
 from PIL import Image,ImageEnhance
 import base64
@@ -14,6 +14,7 @@ color_list ={"local-colors","aap-64-32x","blessing-8x","blk-neo-32x","blk-nx64-3
 "island-joy-16-8x","late-night-sunrise-8x","mulfok32-32x","na16-8x","oil-6-8x","resurrect-64-32x","twilight-5-8x",
 "vanilla-milkshake-8x"}
 
+# For storing any previous image uploaded
 previous_image_data = None
 
 
@@ -37,7 +38,7 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 		image = image.resize((max_width, new_height))
 	
 	
-	# Apply the contrest and brightness filters
+	# Apply the contrast and brightness filters
 	brightness = ImageEnhance.Brightness(image)
 	image = brightness.enhance(bright_value)
 
@@ -90,6 +91,7 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 
 def image_resize(processed_image):
 	#Calculation for the factor acording to the width acording to the pattern formula
+
 	scaling_factor = 0;
 	if processed_image.width <= 38:
 		scaling_factor = 14
@@ -111,7 +113,7 @@ def image_resize(processed_image):
 		scaling_factor = round(scaling_factor)
 		print("Scaling factor rounded:",scaling_factor)
 
-		while (scaling_factor*processed_image.width >900):
+		while scaling_factor*processed_image.width >900:
 			scaling_factor= scaling_factor -1
 			print("Scaling factor reduced:",scaling_factor)
 
@@ -214,11 +216,113 @@ def index():
 				image_bytes = buf.getvalue()
 			encoded_string = base64.b64encode(image_bytes).decode()  
 				   
-		return render_template('index.html', img_data=encoded_string , bright_value=bright_value ,step_value=step_value,contrast_value=contrast_value,dither_value=dither_value, grayscale_value=grayscale_value,color_list=color_list,color_value=color_value,size_value=size_value), 200
-		
+		##return render_template('index.html', img_data=encoded_string , bright_value=bright_value ,step_value=step_value,contrast_value=contrast_value,dither_value=dither_value, grayscale_value=grayscale_value,color_list=color_list,color_value=color_value,size_value=size_value), 200
+			return jsonify({
+				"img_data": encoded_string
+			})
 		
 	else:
 		return render_template('index.html', img_data="", bright_value=1 ,step_value=8,contrast_value=1,dither_value=0.25, grayscale_value="grayscale",color_list=color_list,color_value="local-colors",size_value=300 ), 200
+
+
+@app.route("/pixelfy", methods=["POST"])
+def pixelfy():
+	global previous_image_data
+
+
+	if request.method == 'POST':
+
+		print("incoming request:", request.form)
+		print("Incoming FILES DATA:", request.files)
+		# get the values needed
+		bright_value = float(request.form['brightness'])
+		step_value = int(request.form['steps'])
+		contrast_value = float(request.form['contrast'])
+		dither_value = float(request.form['dither'])
+		grayscale_value = str(request.form.get('grayscale'))
+		color_value = str(request.form.get('colors'))
+		size_value = int((request.form['pixel_size']))
+		## printing to check on console to see if everything all good
+		print('Brightness:', bright_value)
+		print('Contrast:', contrast_value)
+		print('Color Count Steps:', step_value)
+		print('Dither Opacity:', dither_value)
+		print('Grayscale Set:', grayscale_value)
+		print('Color pallet name:', color_value)
+		print('Pixel Width size:', size_value)
+
+		if 'file' not in request.files:
+			if previous_image_data == None:
+				print('No file attached in request')
+				return redirect(request.url)
+			print('No file attached in request , Reusing previous picture')
+			img = previous_image_data.convert('RGB')
+
+			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value,
+											   bright_value, contrast_value, size_value)
+			print('Processed image beofre:', processed_image.mode)
+			processed_image = processed_image.convert('RGB')
+			print('prossed image after:', processed_image.mode)
+
+			## upscale the image to show on the page
+			final_image = image_resize(processed_image)
+
+			with BytesIO() as buf:
+				final_image.save(buf, 'jpeg')
+				image_bytes = buf.getvalue()
+			encoded_string = base64.b64encode(image_bytes).decode()
+
+		file = request.files['file']
+
+		if file.filename == '':
+			if previous_image_data == None:
+				print('No file selected')
+				return redirect(request.url)
+
+			print('No file selected , Reusing previous picture')
+			img = previous_image_data.convert('RGB')
+
+			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value,
+											   bright_value, contrast_value, size_value)
+			print('Processed image beofre:', processed_image.mode)
+			processed_image = processed_image.convert('RGB')
+			print('prossed image after:', processed_image.mode)
+
+			## upscale the image to show on the page
+			final_image = image_resize(processed_image)
+
+			with BytesIO() as buf:
+				final_image.save(buf, 'jpeg')
+				image_bytes = buf.getvalue()
+			encoded_string = base64.b64encode(image_bytes).decode()
+
+		if file and check_allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			print('Uploaded file:', filename)
+			img = Image.open(file.stream)
+
+			# Store a copy of the original image data
+			previous_image_data = img
+
+			img = img.convert('RGB')
+
+			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value,
+											   bright_value, contrast_value, size_value)
+			print('Processed image beofre:', processed_image.mode)
+			processed_image = processed_image.convert('RGB')
+			print('prossed image after:', processed_image.mode)
+
+			## upscale the image to show on the page
+			final_image = image_resize(processed_image)
+
+			with BytesIO() as buf:
+				final_image.save(buf, 'jpeg')
+				image_bytes = buf.getvalue()
+			encoded_string = base64.b64encode(image_bytes).decode()
+
+			return jsonify({
+					"image_data": encoded_string
+				})
 
 if __name__ == "__main__":
 	app.debug=True

@@ -1,3 +1,5 @@
+@import "https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css";
+
 .TestBox1 {
   border: red 2px solid;
 }
@@ -13,7 +15,7 @@
 .TextBox4 {
   border: purple 2px solid;
 }
-
+/*
 body {
   font-family: system-ui;
   background-color: rgb(32, 31, 34);
@@ -91,7 +93,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .slider-cont > * {
-  padding: 0px 6px;
+  padding: 0 6px;
 }
 
 .radio-cont {
@@ -117,4 +119,27 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 #file {
   display: none;
+}
+*/
+
+/* Image preview max height */
+    .preview-image {
+      max-height: 300px;
+      object-fit: contain;
+    }
+
+    /* Bigger sliders */
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+    }
+
+    .slider-wrapper {
+      padding: 0.5rem;
+    }
+    #palette-preview {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: #fafafa;
 }

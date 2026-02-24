@@ -86,6 +86,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
     updateSliderValue(slider_dither, dither_output);
     updateSliderValue(slider_size, size_output);
   });
+
+  const preview = document.getElementById("palette-preview");
+
+  select.addEventListener("change", function () {
+    const value = this.value;
+    if(!value || value === "local-colors") {
+      preview.src ="";
+      preview.style.display = "none";
+    }
+    else {
+      preview.src = "../static/assets/" + value + ".png";
+      preview.style.display = "block";
+      preview.alt = value;
+    }
+
+  });
+
 });
 // script.js
 
@@ -98,6 +115,108 @@ function handleRadioChange() {
 }
 
 function displayFileName(input) {
-  var fileName = input.files[0].name;
+  fileInput = input.files[0];
+  const fileName = fileInput.name;
+  if(!fileInput) return;
+
   document.getElementById("file-name").textContent = fileName;
+  const preview = document.getElementById("uploaded-preview");
+    const noText = document.getElementById("no-image-text");
+
+    // Create temporary local URL
+    const imageURL = URL.createObjectURL(fileInput);
+
+    preview.src = imageURL;
+    preview.style.display = "block";
+    noText.style.display = "none";
+
 }
+
+
+function updatePalettePreview(value) {
+    const preview = document.getElementById("palette-preview");
+
+    if (!value || value === "local-colors" ) {
+      preview.style.display = "none";
+      preview.src = "";
+      return;
+    }
+
+
+    preview.src = "../static/assets/" + value + ".png";
+    preview.alt = value;
+    preview.style.display = "block";
+  }
+
+  async function sendToBackend() {
+
+   const fileInput = document.getElementById("file");
+   console.log(fileInput)
+
+    if (!fileInput.files[0]) {
+      alert("Please upload an image first.");
+      return;
+    }
+
+
+    const formData = new FormData();
+
+    // File
+    formData.append("file", fileInput.files[0]);
+
+    // Sliders (example — adapt IDs to yours)
+    formData.append("brightness", document.getElementById("brightness").value);
+    formData.append("contrast", document.getElementById("contrast").value);
+    formData.append("steps", document.getElementById("steps").value);
+    formData.append("dither", document.getElementById("dither_op").value);
+    formData.append("pixel_size", document.getElementById("pixel_size").value)
+
+    //Radio Button selction choise
+    const greyscaleOption = document.getElementById("grayscale");
+    const colorOption = document.getElementById("colors");
+
+    if (greyscaleOption.checked) {
+      formData.append("grayscale" , "grayscale")
+    }
+    if (colorOption.checked) {
+      formData.append("grayscale", "colors")
+      formData.append("colors", document.getElementById("select-option").value);
+    }
+
+
+    try {
+      const response = await fetch("/pixelfy", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+      console.log(data)
+
+      const resultImg = document.getElementById("result-preview");
+      const noResultText = document.getElementById("no-result-text");
+      const resultActions = document.getElementById("result-actions");
+
+      resultImg.src = "data:image/jpeg;base64," + data.image_data;
+      resultImg.style.display = "block";
+      noResultText.style.display = "none";
+      resultActions.style.display = "block";
+
+    } catch (error) {
+      console.error("Error:", error);
+    }
+}
+
+function saveImage() {
+    const img = document.getElementById("result-preview");
+    if (!img.src) return;
+
+    const link = document.createElement("a");
+    link.href = img.src;
+    link.download = "pixely-" + Date.now() + ".jpg"; // change if PNG
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
