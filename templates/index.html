@@ -113,7 +113,7 @@
               </div>
 
               <div class="column is-6 slider-wrapper">
-                <label class="label"for="pixel_size">Number of Pixels Width: <span id="pixel_output"></span> Px</label>
+                <label class="label"for="pixel_size">Pixel Size Width: <span id="pixel_output"></span> Px</label>
                 <input
                   type="range"
                   step="1"
@@ -160,20 +160,7 @@
                 </select>
               </div>
             <!-- Palette Preview Image -->
-              <div class="mt-3 has-text-centered">
-                {% if color_value %}
-                  <img id="palette-preview"
-                       src="assets/{{ color_value }}.png"
-                       alt="{{ color_value }}"
-                       style="max-height:50px; object-fit:contain; min-height: 20px ; width: 100% ;  image-rendering: pixelated;"/>
-                {% else %}
-                  <img id="palette-preview"
-                       alt=""
-                       src=""
-                       style="display:none; max-height:50px;"
-                  />
-                {% endif %}
-              </div>
+                <div id="palettePreview" class="palette-preview mt-4"></div>
 
             </div>
 

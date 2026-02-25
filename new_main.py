@@ -4,16 +4,13 @@ from werkzeug.utils import secure_filename
 from PIL import Image,ImageEnhance
 import base64
 from io import BytesIO
-
 from blendmodes.blend import blendLayers, BlendType
+import json
 
+with open("assets/pallets.JSON") as f:
+    PALETTES = json.load(f)
 
 allowed_exts = {'jpg', 'jpeg','png','JPG','JPEG','PNG'}
-# List of the color pallet file names , got them from Lospec
-color_list ={"local-colors","aap-64-32x","blessing-8x","blk-neo-32x","blk-nx64-32x","bubblegum-16-8x","endesga-32-32x","gated-8x",
-"island-joy-16-8x","late-night-sunrise-8x","mulfok32-32x","na16-8x","oil-6-8x","resurrect-64-32x","twilight-5-8x",
-"vanilla-milkshake-8x"}
-
 # For storing any previous image uploaded
 previous_image_data = None
 
@@ -26,6 +23,25 @@ def check_allowed_file(filename):
 # Load the pattern image
 pattern_image = Image.open("assets/ditter_weak2.png")
 
+## Convert Hex -> RGB for quantizer pallet
+def hex_to_rgb(hex_color):
+	hex_color = hex_color.lstrip("#")
+	return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+## Build a img pallet for quantizer pallet
+def build_palette_image(hex_colors):
+	palette_img = Image.new("P", (1, 1))
+	rgb_palette = []
+	for hex_color in hex_colors:
+		rgb_palette.extend(hex_to_rgb(hex_color))
+
+	# PIL requires exactly 768 values (256 * 3)
+    # So we pad the palette with zeros
+	while len(rgb_palette) < 768:
+		rgb_palette.extend((0, 0, 0))
+
+	palette_img.putpalette(rgb_palette)
+	return palette_img
 
 # Function to apply dither and Quantization
 def img_quantization(image,step_value,dither_value,grayscale_value,color_value,bright_value,contrast_value,size_value):
@@ -77,10 +93,16 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 	dittered_img = dittered_img.convert('RGB')
 	# Step  6 Apply quantization effect to ge the pixel effect
 	pallet_set = None
-	if grayscale_value == "grayscale"  or color_value == "local-colors":
+	if grayscale_value == "grayscale"  or color_value == "Local-Colors":
 		pallet_set = None
-	else:		
-		pallet_set = Image.open("assets/" + color_value + ".png")
+	else:
+		hex_colors = PALETTES.get(color_value)
+		## if the pallet isnt found it returns None by default has a failsafe
+		if not hex_colors:
+			print("No hex color pallet found, pallet set to None")
+			pallet_set = None
+		else:
+			pallet_set = build_palette_image(hex_colors)
 
 	quantized_image = dittered_img.quantize(colors=step_value, method=None, kmeans=0, palette=pallet_set, dither=0)
 	
@@ -126,104 +148,7 @@ def image_resize(processed_image):
 @app.route("/",methods=['GET', 'POST'])
 def index():
 	global previous_image_data
-	
-	if request.method == 'POST':
-		
-		
-		#get the values needed
-		bright_value = float(request.form['brightness'])
-		step_value = int(request.form['steps'])
-		contrast_value = float(request.form['contrast'] )
-		dither_value = float(request.form['dither_op'])        
-		grayscale_value =  str(request.form.get('grayscale'))
-		color_value =  str(request.form.get('colors'))
-		size_value = int((request.form['pixel_size']))
-		## printing to check on console to see if everything all good
-		print('Brightness:',bright_value)
-		print('Contrast:',contrast_value)
-		print('Color Count Steps:',step_value)
-		print('Dither Opacity:',dither_value)
-		print('Grayscale Set:',grayscale_value)
-		print('Color pallet name:',color_value)
-		print('Pixel Width size:',size_value)
-  
-		
-		if 'file' not in request.files:
-			if previous_image_data == None:
-				print('No file attached in request')
-				return redirect(request.url)
-			print('No file attached in request , Reusing previous picture')
-			img = previous_image_data.convert('RGB')
-			
-			
-			processed_image = img_quantization(img,step_value,dither_value,grayscale_value,color_value,bright_value,contrast_value,size_value)
-			print('Processed image beofre:',processed_image.mode)
-			processed_image = processed_image.convert('RGB')
-			print('prossed image after:',processed_image.mode)
-
-			## upscale the image to show on the page 
-			final_image = image_resize(processed_image)
-	  
-			with BytesIO() as buf:
-				final_image.save(buf, 'jpeg')
-				image_bytes = buf.getvalue()
-			encoded_string = base64.b64encode(image_bytes).decode()  
-		
-		file = request.files['file']
-		
-		
-		if file.filename == '':
-			if previous_image_data == None:
-				print('No file selected')
-				return redirect(request.url)
-			
-			print('No file selected , Reusing previous picture')
-			img = previous_image_data.convert('RGB')
-			
-			processed_image = img_quantization(img,step_value,dither_value,grayscale_value,color_value,bright_value,contrast_value,size_value)
-			print('Processed image beofre:',processed_image.mode)
-			processed_image = processed_image.convert('RGB')
-			print('prossed image after:',processed_image.mode)
-
-			## upscale the image to show on the page 
-			final_image = image_resize(processed_image)
-
-			with BytesIO() as buf:
-				final_image.save(buf, 'jpeg')
-				image_bytes = buf.getvalue()
-			encoded_string = base64.b64encode(image_bytes).decode()  
-		
-		if file and check_allowed_file(file.filename):
-			filename = secure_filename(file.filename)
-			print('Uploaded file:', filename)
-			img = Image.open(file.stream)
-			
-			# Store a copy of the original image data
-			previous_image_data = img
-   
-			img = img.convert('RGB')
-			
-			processed_image = img_quantization(img,step_value,dither_value,grayscale_value,color_value,bright_value,contrast_value,size_value)
-			print('Processed image beofre:',processed_image.mode)
-			processed_image = processed_image.convert('RGB')
-			print('prossed image after:',processed_image.mode)
-
-			## upscale the image to show on the page 
-			final_image = image_resize(processed_image)
-	  
-			with BytesIO() as buf:
-				final_image.save(buf, 'jpeg')
-				image_bytes = buf.getvalue()
-			encoded_string = base64.b64encode(image_bytes).decode()  
-				   
-		##return render_template('index.html', img_data=encoded_string , bright_value=bright_value ,step_value=step_value,contrast_value=contrast_value,dither_value=dither_value, grayscale_value=grayscale_value,color_list=color_list,color_value=color_value,size_value=size_value), 200
-			return jsonify({
-				"img_data": encoded_string
-			})
-		
-	else:
-		return render_template('index.html', img_data="", bright_value=1 ,step_value=8,contrast_value=1,dither_value=0.25, grayscale_value="grayscale",color_list=color_list,color_value="local-colors",size_value=300 ), 200
-
+	return render_template('index.html', img_data="", bright_value=1 ,step_value=8,contrast_value=1,dither_value=0.25, grayscale_value="grayscale",color_list=PALETTES.keys(),color_value="local-colors",size_value=300 ), 200
 
 @app.route("/pixelfy", methods=["POST"])
 def pixelfy():
@@ -306,11 +231,10 @@ def pixelfy():
 
 			img = img.convert('RGB')
 
-			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value,
-											   bright_value, contrast_value, size_value)
-			print('Processed image beofre:', processed_image.mode)
+			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value, bright_value, contrast_value, size_value)
+			print('Processed image before:', processed_image.mode)
 			processed_image = processed_image.convert('RGB')
-			print('prossed image after:', processed_image.mode)
+			print('processed image after:', processed_image.mode)
 
 			## upscale the image to show on the page
 			final_image = image_resize(processed_image)

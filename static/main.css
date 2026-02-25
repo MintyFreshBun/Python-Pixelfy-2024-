@@ -15,112 +15,6 @@
 .TextBox4 {
   border: purple 2px solid;
 }
-/*
-body {
-  font-family: system-ui;
-  background-color: rgb(32, 31, 34);
-  color: white;
-}
-
-.flexbox {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  flex-wrap: wrap;
-  align-content: center;
-  align-items: center;
-  gap: 14px;
-}
-
-.containerFlex {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  text-align: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-}
-
-.btn {
-  width: 220px;
-  height: 46px;
-  background: rgb(25, 116, 235);
-  color: white;
-  font-weight: 600;
-  font-size: 18px;
-  transition: background 0.2s ease-in-out;
-  border: none;
-  border-radius: 6px;
-}
-
-.btn:hover {
-  background: rgb(202, 42, 109);
-}
-.btn:active {
-  background: rgb(143, 28, 108);
-}
-
-.formbox {
-  padding: 8px;
-}
-
-.sliderStyle {
-  width: 280px;
-}
-
-input[type="range"] {
-  -webkit-appearance: none !important;
-  background: rgb(238, 238, 238);
-  height: 20px;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none !important;
-  background: rgb(25, 116, 235);
-  height: 30px;
-  width: 14px;
-  transition: background 0.2s ease-in-out;
-}
-input[type="range"]::-webkit-slider-thumb:hover {
-  background: rgb(202, 42, 109);
-}
-
-.slider-cont {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.slider-cont > * {
-  padding: 0 6px;
-}
-
-.radio-cont {
-  display: flex;
-}
-
-.custom-file-upload {
-  display: inline-block;
-  padding: 6px 12px;
-  font-weight: 600;
-  font-size: 18px;
-  transition: background 0.2s ease-in-out;
-  border: none;
-  cursor: pointer;
-  background: rgb(25, 116, 235);
-  border-radius: 4px;
-  color: #ffffff;
-}
-
-.custom-file-upload:hover {
-  background: rgb(202, 42, 109);
-}
-
-#file {
-  display: none;
-}
-*/
 
 /* Image preview max height */
     .preview-image {
@@ -142,4 +36,17 @@ input[type="range"]::-webkit-slider-thumb:hover {
   padding: 0.5rem;
   border-radius: 6px;
   background: #fafafa;
+}
+/* Pallet preview css*/
+.palette-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.color-block {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.2);
 }

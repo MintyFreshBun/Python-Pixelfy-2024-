@@ -11,9 +11,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
   const steps_output = document.getElementById("steps_output");
   const dither_output = document.getElementById("dither_output");
   const size_output = document.getElementById("pixel_output");
+
+
   // Function to update the slider values
   function updateSliderValue(slider, valueElement) {
     valueElement.textContent = slider.value;
+  }
+
+  function updateSliderPercentage(slider,valueElement) {
+      valueElement.textContent = (slider.value * 100) -100 + "%"
   }
 
   function updateDitherSlider(slider, valueElement) {
@@ -22,12 +28,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
   // Event listener for opacity slider
   slider_bright.addEventListener("input", function () {
-    updateSliderValue(slider_bright, output_bright);
+    updateSliderPercentage(slider_bright, output_bright);
   });
 
   // Event listener for contrast slider
   slider_contrast.addEventListener("input", function () {
-    updateSliderValue(slider_contrast, contrast_output);
+    updateSliderPercentage(slider_contrast, contrast_output);
   });
 
   // Event listener for steps slider
@@ -46,10 +52,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
   });
 
   // Update initial slider values
-  updateSliderValue(slider_bright, output_bright);
-  updateSliderValue(slider_contrast, contrast_output);
+  updateSliderPercentage(slider_bright, output_bright);
+  updateSliderPercentage(slider_contrast, contrast_output);
   updateSliderValue(slider_steps, steps_output);
-  updateSliderValue(slider_dither, dither_output);
+  updateDitherSlider(slider_dither, dither_output);
   updateSliderValue(slider_size, size_output);
 
   const select = document.getElementById("options-box");
@@ -87,24 +93,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
     updateSliderValue(slider_size, size_output);
   });
 
-  const preview = document.getElementById("palette-preview");
 
-  select.addEventListener("change", function () {
-    const value = this.value;
-    if(!value || value === "local-colors") {
-      preview.src ="";
-      preview.style.display = "none";
-    }
-    else {
-      preview.src = "../static/assets/" + value + ".png";
-      preview.style.display = "block";
-      preview.alt = value;
-    }
-
-  });
 
 });
-// script.js
+
+let PALETTES = null;
 
 function handleRadioChange() {
   const select = document.getElementById("options-box");
@@ -115,38 +108,45 @@ function handleRadioChange() {
 }
 
 function displayFileName(input) {
-  fileInput = input.files[0];
-  const fileName = fileInput.name;
-  if(!fileInput) return;
+    let fileInput = input.files[0];
+    const fileName = fileInput.name;
+    if (!fileInput) return;
 
-  document.getElementById("file-name").textContent = fileName;
-  const preview = document.getElementById("uploaded-preview");
+    document.getElementById("file-name").textContent = fileName;
+    const preview = document.getElementById("uploaded-preview");
     const noText = document.getElementById("no-image-text");
 
     // Create temporary local URL
-    const imageURL = URL.createObjectURL(fileInput);
-
-    preview.src = imageURL;
+    preview.src = URL.createObjectURL(fileInput);;
     preview.style.display = "block";
     noText.style.display = "none";
 
 }
 
 
-function updatePalettePreview(value) {
-    const preview = document.getElementById("palette-preview");
+async function updatePalettePreview(name) {
+    const preview = document.getElementById("palettePreview");
+    preview.innerHTML = "";
 
-    if (!value || value === "local-colors" ) {
-      preview.style.display = "none";
-      preview.src = "";
-      return;
+    if (!name) return;
+
+    // Load once if not loaded
+    if (!PALETTES) {
+        const response = await fetch("./static/assets/pallets.JSON");
+        PALETTES = await response.json();
     }
 
+    if (!PALETTES[name]) return;
 
-    preview.src = "../static/assets/" + value + ".png";
-    preview.alt = value;
-    preview.style.display = "block";
-  }
+    PALETTES[name].forEach(color => {
+        const block = document.createElement("div");
+        block.className = "color-block";
+        block.style.backgroundColor = color;
+        block.style.border= "1px solid white"
+        block.title = color;
+        preview.appendChild(block);
+    });
+}
 
   async function sendToBackend() {
 
