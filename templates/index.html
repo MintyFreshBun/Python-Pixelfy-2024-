@@ -31,31 +31,18 @@
          <form method="post" enctype="multipart/form-data">
          -->
           <div class="box">
-
-            <h2 class="title is-5 has-text-centered">Controls</h2>
-              <div class="buttons is-centered mt-4">
-                  <input type="file" id="file" name="file" onchange="displayFileName(this)" multiple="false" accept="image/*" hidden />
-                  <label for="file" class="button is-primary">
-                      Upload
-                  </label>
-                  <button class="button is-light" id="resetButton">
-                      Reset
-                  </button>
+              <h2 class="title is-5 has-text-centered">Controls</h2>
+              <div class="buttons is-justify-content-space-between mt-4">
+                  <div class=" is-flex is-flex-direction-row is-align-items-center">
+                      <input type="file" id="file" name="file" onchange="displayFileName(this)" multiple="false" accept="image/*" hidden />
+                      <label for="file" class="button is-primary mr-2">
+                          Upload
+                      </label>
+                       <div class="has-text-grey-light ">
+                        <span id="file-name"> No image uploaded</span>
+                       </div>
+                  </div>
               </div>
-
-            <!-- Image Preview -->
-            <div class="box has-text-centered mb-5">
-
-              <figure class="image is-flex is-justify-content-center mb-2">
-                <img id="uploaded-preview"
-                     src=""
-                     alt="upload"
-                     style="display:none; max-height:300px; object-fit:contain;"/>
-              </figure>
-                <div class="has-text-grey-light ">
-                  <span id="file-name"> No image uploaded</span>
-              </div>
-            </div>
 
             <!-- SLIDERS IN ROWS OF 2 -->
             <div class="columns is-multiline is-mobile p-4">
@@ -167,7 +154,7 @@
             <!-- PIXELY BUTTON -->
             <div class="field mt-5">
               <button class="button is-warning is-fullwidth is-medium" onclick="sendToBackend()">
-                PIXELY
+                PIXELFY
               </button>
             </div>
 
@@ -191,7 +178,16 @@
                   <!-- Result image -->
                   <figure class="image is-flex is-justify-content-center">
                     <img id="result-preview"
+                         alt="result"
+                         src=""
                          style="display:none; max-height:400px; object-fit:contain;">
+                  </figure>
+                  <!-- Preview Image -->
+                  <figure class="image is-flex is-justify-content-center ">
+                    <img id="uploaded-preview"
+                         src=""
+                         alt="upload"
+                         style="display:none; max-height:400px; object-fit:contain;"/>
                   </figure>
 
                    <!-- Action Buttons -->
@@ -199,6 +195,9 @@
                     <button id="save-btn" class="button is-primary is-small" onclick="saveImage()">
                       Save Image
                     </button>
+                      <button id="previewBtn" class="button is-primary is-small is-warning" onclick="togglePreviewBtn()">
+                          Show Original
+                      </button>
 
                   </div>
 

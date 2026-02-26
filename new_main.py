@@ -1,4 +1,4 @@
-from PIL.Image import Resampling
+from PIL.Image import Resampling, Dither
 from flask import Flask, request, redirect, render_template ,jsonify
 from werkzeug.utils import secure_filename
 from PIL import Image,ImageEnhance
@@ -8,7 +8,7 @@ from blendmodes.blend import blendLayers, BlendType
 import json
 
 with open("assets/pallets.JSON") as f:
-    PALETTES = json.load(f)
+	PALETTES = json.load(f)
 
 allowed_exts = {'jpg', 'jpeg','png','JPG','JPEG','PNG'}
 # For storing any previous image uploaded
@@ -36,7 +36,7 @@ def build_palette_image(hex_colors):
 		rgb_palette.extend(hex_to_rgb(hex_color))
 
 	# PIL requires exactly 768 values (256 * 3)
-    # So we pad the palette with zeros
+	# So we pad the palette with zeros
 	while len(rgb_palette) < 768:
 		rgb_palette.extend((0, 0, 0))
 
@@ -81,7 +81,7 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 	dither_image = tiled_image.convert('RGB')
 	
 	
-	# Step 4 :Create a new white image and blend with together with the seemless pattern
+	# Step 4 :Create a new white image and blend with together with our seemless dither pattern
 	white_bg = Image.new('RGB',(image.width, image.height), color='grey' )
 	
 	pseduditter = Image.blend(white_bg,dither_image, alpha=1)
@@ -104,7 +104,7 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 		else:
 			pallet_set = build_palette_image(hex_colors)
 
-	quantized_image = dittered_img.quantize(colors=step_value, method=None, kmeans=0, palette=pallet_set, dither=0)
+	quantized_image = dittered_img.quantize(colors=step_value, method=None, kmeans=0, palette=pallet_set, dither=Dither.NONE)
 	
 	# Step 6: Return the processed image
 	#return processed_image
@@ -114,7 +114,7 @@ def img_quantization(image,step_value,dither_value,grayscale_value,color_value,b
 def image_resize(processed_image):
 	#Calculation for the factor acording to the width acording to the pattern formula
 
-	scaling_factor = 0;
+
 	if processed_image.width <= 38:
 		scaling_factor = 14
 		print("Scaling factor:",scaling_factor)

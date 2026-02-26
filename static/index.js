@@ -77,27 +77,18 @@ document.addEventListener("DOMContentLoaded", function (event) {
       select.style.display = "block";
     }
   });
-  resetButton.addEventListener("click", function () {
-    // Reset sliders value to default
 
-    slider_bright.value = 1;
-    slider_contrast.value = 1;
-    slider_steps.value = 16;
-    slider_dither.value = 0.25;
-    slider_size.value = 300;
-
-    updateSliderValue(slider_bright, output_bright);
-    updateSliderValue(slider_contrast, contrast_output);
-    updateSliderValue(slider_steps, steps_output);
-    updateSliderValue(slider_dither, dither_output);
-    updateSliderValue(slider_size, size_output);
-  });
 
 
 
 });
 
+
 let PALETTES = null;
+let fileInput = null;
+let resultInput = null;
+let previewToggle = true; // true shows the original , false shows the result
+let disabledPreview = true // this is for when theres no results
 
 function handleRadioChange() {
   const select = document.getElementById("options-box");
@@ -108,21 +99,54 @@ function handleRadioChange() {
 }
 
 function displayFileName(input) {
-    let fileInput = input.files[0];
+    fileInput = input.files[0];
     const fileName = fileInput.name;
     if (!fileInput) return;
 
     document.getElementById("file-name").textContent = fileName;
     const preview = document.getElementById("uploaded-preview");
-    const noText = document.getElementById("no-image-text");
+
+    previewToggle = true;
+    resultInput = null;
 
     // Create temporary local URL
-    preview.src = URL.createObjectURL(fileInput);;
+    preview.src = URL.createObjectURL(fileInput);
     preview.style.display = "block";
-    noText.style.display = "none";
+
+
+    //for the results switch (probably turn this into a function
+    const resultImg = document.getElementById("result-preview");
+    const noResultText = document.getElementById("no-result-text");
+    const resultActions = document.getElementById("result-actions");
+
+    resultImg.style.display = "none";
+    noResultText.style.display = "none";
+    resultActions.style.display = "none";
+
 
 }
 
+function togglePreviewBtn() {
+    //checker , if its true then will switch false and show the result
+    if( previewToggle) {
+        previewToggle = !previewToggle;
+        const preview = document.getElementById("uploaded-preview");
+        preview.style.display = "block";
+        const resultImg = document.getElementById("result-preview");
+        resultImg.style.display= "none";
+        const btnPreview = document.getElementById("previewBtn");
+        btnPreview.textContent = "Show Result"
+    }
+    else {
+        previewToggle = !previewToggle;
+        const preview = document.getElementById("uploaded-preview");
+        preview.style.display = "none";
+        const resultImg = document.getElementById("result-preview");
+        resultImg.style.display= "block";
+        const btnPreview = document.getElementById("previewBtn");
+        btnPreview.textContent = "Show Original"
+    }
+}
 
 async function updatePalettePreview(name) {
     const preview = document.getElementById("palettePreview");
@@ -185,25 +209,30 @@ async function updatePalettePreview(name) {
 
 
     try {
-      const response = await fetch("/pixelfy", {
-        method: "POST",
-        body: formData
-      });
+          const response = await fetch("/pixelfy", {
+              method: "POST",
+              body: formData
+          });
 
-      const data = await response.json();
-      console.log(data)
+          const data = await response.json();
+          console.log(data);
+          resultInput = "data:image/jpeg;base64," + data.image_data;
 
-      const resultImg = document.getElementById("result-preview");
-      const noResultText = document.getElementById("no-result-text");
-      const resultActions = document.getElementById("result-actions");
+          const resultImg = document.getElementById("result-preview");
+          const noResultText = document.getElementById("no-result-text");
+          const resultActions = document.getElementById("result-actions");
 
-      resultImg.src = "data:image/jpeg;base64," + data.image_data;
-      resultImg.style.display = "block";
-      noResultText.style.display = "none";
-      resultActions.style.display = "block";
+          resultImg.src = resultInput
+          resultImg.style.display = "block";
+          noResultText.style.display = "none";
+          resultActions.style.display = "block";
+          //turn off the preview file
+          const preview = document.getElementById("uploaded-preview");
+          preview.style.display = "none"
 
-    } catch (error) {
-      console.error("Error:", error);
+
+      } catch (error) {
+        console.error("Error:", error);
     }
 }
 
