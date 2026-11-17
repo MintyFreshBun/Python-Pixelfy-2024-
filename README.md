@@ -1,71 +1,76 @@
-<br/>
-<p align="center">
-  <h3 align="center">Python Pixelfy</h3>
+# Python Pixelfy
 
-  <p align="center">
-    Turn your Pictures into Pixelart !!
-    <br/>
-    <br/>
-    <a href="https://github.com/MintyFreshBun/Python-Pixelfy-2024-/issues">Report Bug</a>
-    .
-  </p>
-</p>
+Turn a photo into pixel art in your browser. Upload an image, adjust the color and dithering controls, and save the result.
 
-![Contributors](https://img.shields.io/github/contributors/MintyFreshBun/Python-Pixelfy-2024-?color=dark-green) ![Stargazers](https://img.shields.io/github/stars/MintyFreshBun/Python-Pixelfy-2024-?style=social) ![Issues](https://img.shields.io/github/issues/MintyFreshBun/Python-Pixelfy-2024-)
+[![Flask](https://img.shields.io/badge/Flask-3.1-blue)](https://flask.palletsprojects.com/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 
-## Table Of Contents
+## Features
 
-- [About the Project](#about-the-project)
-- [Built With](#built-with)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-- [Authors](#authors)
+- Pixel-art conversion with adjustable brightness, contrast, dithering, and color count
+- Grayscale output or a selection of built-in color palettes
+- Original/result preview toggle and JPEG download
 
-## About The Project
+## Requirements
 
-This is a project i created allows to turn pictures into pixelart.
-I am a pixel artist and wondered if it was possible to translate the method i use for my pixelart , into coding and into an application.
-This gave me an opportunity to explore and put my python skills to the test in a web application enviroement along with faslk.
+- Python 3.10 or newer
+- pip
 
-## Built With
+The app uses Flask, Pillow, BlendModes, and Werkzeug. Exact tested versions are listed in [`requirements.txt`](requirements.txt).
 
-This Project was built with Python, Flask and python libraries.
+## Run locally
 
-- [Flask](https://flask.palletsprojects.com/en/3.0.x/#)
-- [Pillow](https://pypi.org/project/pillow/)
-- [BlendModes](https://github.com/FHPythonUtils/BlendModes)
+1. Clone the repository and enter its folder:
 
-## Getting Started
+   ```bash
+   git clone https://github.com/MintyFreshBun/Python-Pixelfy-2024-.git
+   cd Python-Pixelfy-2024-
+   ```
 
-To get a local copy up and running follow these simple example steps.
+2. Create and activate a virtual environment:
 
-### Installation
+   **Windows (PowerShell):**
 
-ython Pixelfy Version 1
+   ```powershell
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
 
-    1. Clone the repository:
-       ```bash
-       git clone https://github.com/MintyFreshBun/Python-Pixelfy-2024-
-       cd Python-Pixelfy-2024--main
-       ```
+   **macOS / Linux:**
 
-    2. Create and activate a virtual environment:
-       ```bash
-       python -m venv venv
-       source venv/bin/activate   # On Linux/Mac
-       .\venv\Scripts\activate    # On Windows
-       ```
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
 
-    3. Install dependencies:
-       ```bash
-       pip install -r requirements.txt
-       ```
+3. Install the project dependencies:
 
-    4. Run the scraper:
-       ```bash
-       python new_main.py
-       ```
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
 
-## Authors
+4. Start the development server from the repository folder:
 
-- **Miguel Amaral** - _FullStack Developer_ - [Miguel Amaral](Python-Pixelfy-2024-) - _Developer of this app_
+   ```bash
+   python new_main.py
+   ```
+
+5. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) and upload an image.
+
+The app loads its palette and pattern files from the repository, so run it from the project folder. Bulma is loaded from a CDN, so an internet connection is needed for the page styling.
+
+## Run tests
+
+With the virtual environment active, run:
+
+```bash
+python -m unittest discover -s tests
+```
+
+## Notes
+
+`new_main.py` starts Flask's development server. Do not expose it directly to the internet or use it as a production server.
+
+## Author
+
+**Miguel Amaral** — developer

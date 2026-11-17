@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Python Pixelfy Images</title>
+    <title>Python Pixely</title>
     <script  src="/static/index.js"></script>
     <link rel="stylesheet" href="/static/main.css"/>
     
@@ -13,7 +13,7 @@
   <!-- ===== TOP SECTION ===== -->
   <section class="section">
     <div class="container has-text-centered">
-      <h1 class="title is-2 pb-2">Pixely Generator</h1>
+      <h1 class="title is-2 pb-2">Python Pixely</h1>
       <p class="subtitle is-5">
         Upload an image and transform it into pixel art.
       </p>
@@ -32,16 +32,14 @@
          -->
           <div class="box">
               <h2 class="title is-5 has-text-centered">Controls</h2>
-              <div class="buttons is-justify-content-space-between mt-4">
-                  <div class=" is-flex is-flex-direction-row is-align-items-center">
-                      <input type="file" id="file" name="file" onchange="displayFileName(this)" multiple="false" accept="image/*" hidden />
-                      <label for="file" class="button is-primary mr-2">
-                          Upload
-                      </label>
-                       <div class="has-text-grey-light ">
-                        <span id="file-name"> No image uploaded</span>
-                       </div>
-                  </div>
+              <div class="upload-row">
+                <input type="file" id="file" name="file" onchange="displayFileName(this)" accept="image/jpeg,image/png" hidden />
+                <label for="file" class="button is-primary">
+                  Upload image
+                </label>
+                <span id="file-name" class="file-name has-text-grey" title="No image uploaded" aria-live="polite">
+                  No image uploaded
+                </span>
               </div>
 
             <!-- SLIDERS IN ROWS OF 2 -->
@@ -108,7 +106,7 @@
                   min="30"
                   id="pixel_size"
                   name="pixel_size"
-                  value="{{pixel_size}}"
+                  value="{{size_value}}"
                 />
               </div>
 
@@ -172,22 +170,13 @@
 
                 <!-- Placeholder text -->
                   <p id="no-result-text" class="has-text-grey-light">
-                    No result yet. Upload and press Pixely.
+                    Upload an image to preview it here.
                   </p>
 
-                  <!-- Result image -->
-                  <figure class="image is-flex is-justify-content-center">
-                    <img id="result-preview"
-                         alt="result"
-                         src=""
-                         style="display:none; max-height:400px; object-fit:contain;">
-                  </figure>
-                  <!-- Preview Image -->
-                  <figure class="image is-flex is-justify-content-center ">
-                    <img id="uploaded-preview"
-                         src=""
-                         alt="upload"
-                         style="display:none; max-height:400px; object-fit:contain;"/>
+                  <p id="preview-label" class="has-text-weight-semibold mb-2" style="display:none;"></p>
+                  <figure class="preview-frame">
+                    <img id="result-preview" class="preview-image" alt="Pixel art result" src="" />
+                    <img id="uploaded-preview" class="preview-image" alt="Original uploaded image" src="" />
                   </figure>
 
                    <!-- Action Buttons -->
@@ -209,5 +198,10 @@
       </div>
     </div>
   </section>
+  <footer class="site-footer section py-5">
+    <div class="container has-text-centered">
+      <p>By Miguel Amaral · <a href="https://github.com/MintyFreshBun" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+    </div>
+  </footer>
   </body>
 </html>

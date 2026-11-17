@@ -85,10 +85,22 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
 let PALETTES = null;
-let fileInput = null;
-let resultInput = null;
-let previewToggle = true; // true shows the original , false shows the result
-let disabledPreview = true // this is for when theres no results
+let originalImageUrl = null;
+let showingOriginal = true;
+
+function setPreview(showOriginal) {
+    const originalPreview = document.getElementById("uploaded-preview");
+    const resultPreview = document.getElementById("result-preview");
+    const previewLabel = document.getElementById("preview-label");
+    const previewButton = document.getElementById("previewBtn");
+
+    showingOriginal = showOriginal;
+    originalPreview.style.display = showOriginal ? "block" : "none";
+    resultPreview.style.display = showOriginal ? "none" : "block";
+    previewLabel.textContent = showOriginal ? "Original image" : "Pixel art result";
+    previewLabel.style.display = "block";
+    previewButton.textContent = showOriginal ? "Show Result" : "Show Original";
+}
 
 function handleRadioChange() {
   const select = document.getElementById("options-box");
@@ -99,53 +111,31 @@ function handleRadioChange() {
 }
 
 function displayFileName(input) {
-    fileInput = input.files[0];
-    const fileName = fileInput.name;
-    if (!fileInput) return;
+    const selectedFile = input.files[0];
+    if (!selectedFile) return;
+    const fileName = selectedFile.name;
 
-    document.getElementById("file-name").textContent = fileName;
+    const fileNameLabel = document.getElementById("file-name");
+    fileNameLabel.textContent = fileName;
+    fileNameLabel.title = fileName;
     const preview = document.getElementById("uploaded-preview");
 
-    previewToggle = true;
-    resultInput = null;
+    if (originalImageUrl) {
+      URL.revokeObjectURL(originalImageUrl);
+    }
+    originalImageUrl = URL.createObjectURL(selectedFile);
+    preview.src = originalImageUrl;
+    setPreview(true);
 
-    // Create temporary local URL
-    preview.src = URL.createObjectURL(fileInput);
-    preview.style.display = "block";
-
-
-    //for the results switch (probably turn this into a function
-    const resultImg = document.getElementById("result-preview");
     const noResultText = document.getElementById("no-result-text");
     const resultActions = document.getElementById("result-actions");
 
-    resultImg.style.display = "none";
     noResultText.style.display = "none";
     resultActions.style.display = "none";
-
-
 }
 
 function togglePreviewBtn() {
-    //checker , if its true then will switch false and show the result
-    if( previewToggle) {
-        previewToggle = !previewToggle;
-        const preview = document.getElementById("uploaded-preview");
-        preview.style.display = "block";
-        const resultImg = document.getElementById("result-preview");
-        resultImg.style.display= "none";
-        const btnPreview = document.getElementById("previewBtn");
-        btnPreview.textContent = "Show Result"
-    }
-    else {
-        previewToggle = !previewToggle;
-        const preview = document.getElementById("uploaded-preview");
-        preview.style.display = "none";
-        const resultImg = document.getElementById("result-preview");
-        resultImg.style.display= "block";
-        const btnPreview = document.getElementById("previewBtn");
-        btnPreview.textContent = "Show Original"
-    }
+    setPreview(!showingOriginal);
 }
 
 async function updatePalettePreview(name) {
@@ -214,25 +204,26 @@ async function updatePalettePreview(name) {
               body: formData
           });
 
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Image processing failed.");
+          }
+
           const data = await response.json();
           console.log(data);
-          resultInput = "data:image/jpeg;base64," + data.image_data;
 
           const resultImg = document.getElementById("result-preview");
           const noResultText = document.getElementById("no-result-text");
           const resultActions = document.getElementById("result-actions");
 
-          resultImg.src = resultInput
-          resultImg.style.display = "block";
+          resultImg.src = "data:image/jpeg;base64," + data.image_data;
           noResultText.style.display = "none";
           resultActions.style.display = "block";
-          //turn off the preview file
-          const preview = document.getElementById("uploaded-preview");
-          preview.style.display = "none"
-
+          setPreview(false);
 
       } catch (error) {
         console.error("Error:", error);
+        alert(error.message || "Image processing failed.");
     }
 }
 

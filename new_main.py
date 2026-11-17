@@ -1,7 +1,6 @@
 from PIL.Image import Resampling, Dither
-from flask import Flask, request, redirect, render_template ,jsonify
-from werkzeug.utils import secure_filename
-from PIL import Image,ImageEnhance
+from flask import Flask, request, render_template, jsonify
+from PIL import Image, ImageEnhance, UnidentifiedImageError
 import base64
 from io import BytesIO
 from blendmodes.blend import blendLayers, BlendType
@@ -147,107 +146,50 @@ def image_resize(processed_image):
 
 @app.route("/",methods=['GET', 'POST'])
 def index():
-	global previous_image_data
-	return render_template('index.html', img_data="", bright_value=1 ,step_value=8,contrast_value=1,dither_value=0.25, grayscale_value="grayscale",color_list=PALETTES.keys(),color_value="local-colors",size_value=300 ), 200
+	return render_template('index.html', img_data="", bright_value=1 ,step_value=8,contrast_value=1,dither_value=0.25, grayscale_value="grayscale",color_list=PALETTES.keys(),color_value="Local-Colors",size_value=300 ), 200
 
 @app.route("/pixelfy", methods=["POST"])
 def pixelfy():
 	global previous_image_data
 
-
-	if request.method == 'POST':
-
-		print("incoming request:", request.form)
-		print("Incoming FILES DATA:", request.files)
-		# get the values needed
+	try:
 		bright_value = float(request.form['brightness'])
 		step_value = int(request.form['steps'])
 		contrast_value = float(request.form['contrast'])
 		dither_value = float(request.form['dither'])
-		grayscale_value = str(request.form.get('grayscale'))
-		color_value = str(request.form.get('colors'))
-		size_value = int((request.form['pixel_size']))
-		## printing to check on console to see if everything all good
-		print('Brightness:', bright_value)
-		print('Contrast:', contrast_value)
-		print('Color Count Steps:', step_value)
-		print('Dither Opacity:', dither_value)
-		print('Grayscale Set:', grayscale_value)
-		print('Color pallet name:', color_value)
-		print('Pixel Width size:', size_value)
+		size_value = int(request.form['pixel_size'])
+	except (KeyError, TypeError, ValueError):
+		return jsonify({"error": "Image settings are missing or invalid."}), 400
 
-		if 'file' not in request.files:
-			if previous_image_data == None:
-				print('No file attached in request')
-				return redirect(request.url)
-			print('No file attached in request , Reusing previous picture')
-			img = previous_image_data.convert('RGB')
+	grayscale_value = request.form.get('grayscale', 'grayscale')
+	color_value = request.form.get('colors', 'Local-Colors')
+	file = request.files.get('file')
 
-			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value,
-											   bright_value, contrast_value, size_value)
-			print('Processed image beofre:', processed_image.mode)
-			processed_image = processed_image.convert('RGB')
-			print('prossed image after:', processed_image.mode)
+	if file and file.filename:
+		if not check_allowed_file(file.filename):
+			return jsonify({"error": "Choose a JPG or PNG image."}), 400
+		try:
+			with Image.open(file.stream) as uploaded_image:
+				img = uploaded_image.convert('RGB')
+		except (UnidentifiedImageError, OSError):
+			return jsonify({"error": "The uploaded file could not be read as an image."}), 400
+		previous_image_data = img.copy()
+	elif previous_image_data is not None:
+		img = previous_image_data.convert('RGB')
+	else:
+		return jsonify({"error": "Please upload an image first."}), 400
 
-			## upscale the image to show on the page
-			final_image = image_resize(processed_image)
+	processed_image = img_quantization(
+		img, step_value, dither_value, grayscale_value, color_value,
+		bright_value, contrast_value, size_value
+	).convert('RGB')
+	final_image = image_resize(processed_image)
 
-			with BytesIO() as buf:
-				final_image.save(buf, 'jpeg')
-				image_bytes = buf.getvalue()
-			encoded_string = base64.b64encode(image_bytes).decode()
-
-		file = request.files['file']
-
-		if file.filename == '':
-			if previous_image_data == None:
-				print('No file selected')
-				return redirect(request.url)
-
-			print('No file selected , Reusing previous picture')
-			img = previous_image_data.convert('RGB')
-
-			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value,
-											   bright_value, contrast_value, size_value)
-			print('Processed image beofre:', processed_image.mode)
-			processed_image = processed_image.convert('RGB')
-			print('prossed image after:', processed_image.mode)
-
-			## upscale the image to show on the page
-			final_image = image_resize(processed_image)
-
-			with BytesIO() as buf:
-				final_image.save(buf, 'jpeg')
-				image_bytes = buf.getvalue()
-			encoded_string = base64.b64encode(image_bytes).decode()
-
-		if file and check_allowed_file(file.filename):
-			filename = secure_filename(file.filename)
-			print('Uploaded file:', filename)
-			img = Image.open(file.stream)
-
-			# Store a copy of the original image data
-			previous_image_data = img
-
-			img = img.convert('RGB')
-
-			processed_image = img_quantization(img, step_value, dither_value, grayscale_value, color_value, bright_value, contrast_value, size_value)
-			print('Processed image before:', processed_image.mode)
-			processed_image = processed_image.convert('RGB')
-			print('processed image after:', processed_image.mode)
-
-			## upscale the image to show on the page
-			final_image = image_resize(processed_image)
-
-			with BytesIO() as buf:
-				final_image.save(buf, 'jpeg')
-				image_bytes = buf.getvalue()
-			encoded_string = base64.b64encode(image_bytes).decode()
-
-			return jsonify({
-					"image_data": encoded_string
-				})
+	with BytesIO() as buf:
+		final_image.save(buf, 'jpeg')
+		image_bytes = buf.getvalue()
+	encoded_string = base64.b64encode(image_bytes).decode()
+	return jsonify({"image_data": encoded_string})
 
 if __name__ == "__main__":
-	app.debug=True
-	app.run(host='0.0.0.0')
+	app.run(debug=True)
